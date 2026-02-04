@@ -435,13 +435,78 @@ document.addEventListener('click', (e) => {
 });
 
 // ========================================
-// Animation pause when page not visible
-// Saves battery by pausing CSS animations
+// Quantum Animation System
+// JavaScript-driven to avoid browser rendering issues
+// with @property CSS animations on the html element.
+// Safari/Firefox can flash white when CSS animations cycle.
 // ========================================
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    document.documentElement.style.animationPlayState = 'paused';
-  } else {
-    document.documentElement.style.animationPlayState = 'running';
+const QuantumAnimation = {
+  running: true,
+  startTime: null,
+  rafId: null,
+
+  // Animation durations (in ms)
+  hueCycleDuration: 30000,  // 30s for full hue rotation
+  pulseDuration: 9000,      // 9s for intensity pulse
+  pulseDelay: 6000,         // 6s delay before pulse starts
+
+  init() {
+    this.startTime = performance.now();
+    this.animate();
+
+    // Pause when page not visible (saves battery)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        this.pause();
+      } else {
+        this.resume();
+      }
+    });
+  },
+
+  animate() {
+    if (!this.running) return;
+
+    const now = performance.now();
+    const elapsed = now - this.startTime;
+
+    // Hue cycles continuously from 0 to 360 (30s cycle)
+    // Using modulo avoids the discontinuity that causes browser repaints
+    const hue = (elapsed / this.hueCycleDuration * 360) % 360;
+
+    // Intensity pulses with easeInOutSine (9s cycle, 6s delay)
+    let intensity = 0;
+    const pulseElapsed = elapsed - this.pulseDelay;
+    if (pulseElapsed > 0) {
+      const pulseProgress = (pulseElapsed % this.pulseDuration) / this.pulseDuration;
+      // easeInOutSine: peaks at 0.5, returns to 0 at 1.0
+      intensity = Math.sin(pulseProgress * Math.PI);
+    }
+
+    // Apply to document element
+    const root = document.documentElement;
+    root.style.setProperty('--quantum-hue', `${hue}deg`);
+    root.style.setProperty('--quantum-intensity', intensity.toFixed(3));
+
+    this.rafId = requestAnimationFrame(() => this.animate());
+  },
+
+  pause() {
+    this.running = false;
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
+  },
+
+  resume() {
+    if (!this.running) {
+      this.running = true;
+      // Adjust start time to maintain smooth animation continuity
+      this.animate();
+    }
   }
-});
+};
+
+// Start quantum animations
+QuantumAnimation.init();

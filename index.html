@@ -158,11 +158,9 @@
       inherits: true;
     }
 
-    html {
-      animation:
-        quantumShift 30s linear infinite,
-        quantumPulse 9s ease-in-out infinite 6s;
-    }
+    /* Quantum animations now driven by JavaScript to avoid
+       browser rendering issues with @property animations on html element.
+       Safari/Firefox can flash white when CSS animations cycle on documentElement. */
 
     /* Quantum wash overlay - visible color life */
     body::before {
