@@ -8,17 +8,15 @@
   # Prevent MIME type sniffing
   X-Content-Type-Options: nosniff
 
-  # Enable XSS filter (legacy browsers)
-  X-XSS-Protection: 1; mode=block
-
   # Control referrer information
   Referrer-Policy: strict-origin-when-cross-origin
 
   # Permissions Policy - minimal permissions
   Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()
 
-  # Content Security Policy (also in meta tag, but headers take precedence)
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
+  # Content Security Policy (single source of truth - no meta tag duplicate)
+  # Note: 'unsafe-inline' kept for styles only (common practice, lower risk than scripts)
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
 
   # Strict Transport Security (HSTS)
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
