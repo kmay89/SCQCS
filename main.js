@@ -387,12 +387,25 @@ const MobileNav = {
 
     if (!this.hamburger || !this.mobileNav) return;
 
-    // Toggle menu on hamburger click
-    this.hamburger.addEventListener('click', () => this.toggle());
+    // Toggle menu on hamburger click/touch
+    // Use both click and touchend for better iOS support
+    const handleToggle = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.toggle();
+    };
 
-    // Close menu when clicking a link
+    this.hamburger.addEventListener('click', handleToggle);
+    // Touchend fires more reliably on iOS Safari
+    this.hamburger.addEventListener('touchend', handleToggle, { passive: false });
+
+    // Close menu when clicking/touching a link
     this.mobileNav.querySelectorAll('a').forEach(link => {
       link.addEventListener('click', () => this.close());
+      link.addEventListener('touchend', (e) => {
+        // Let the navigation happen naturally
+        this.close();
+      }, { passive: true });
     });
 
     // Close menu on escape key
@@ -402,12 +415,17 @@ const MobileNav = {
       }
     });
 
-    // Close menu when clicking outside
+    // Close menu when clicking/touching outside
     this.mobileNav.addEventListener('click', (e) => {
       if (e.target === this.mobileNav) {
         this.close();
       }
     });
+    this.mobileNav.addEventListener('touchend', (e) => {
+      if (e.target === this.mobileNav) {
+        this.close();
+      }
+    }, { passive: true });
   },
 
   toggle() {
