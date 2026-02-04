@@ -1,6 +1,11 @@
 # Site Security, Privacy & SEO Checklist
 
-A comprehensive checklist for publishing secure, privacy-respecting, SEO-optimized static sites. Applicable to ERRERLabs, SCQCS, SecuraCV, and similar projects.
+A comprehensive checklist for publishing secure, privacy-respecting, SEO-optimized static sites.
+
+> **Free to use.** Copy this checklist to your own projects. No attribution required.
+> Works with Netlify, Vercel, Cloudflare Pages, or any static host that supports `_headers`.
+
+Originally developed for [SCQCS](https://scqcs.com), [SecuraCV](https://securacv.netlify.app), and [ERRERLabs](https://errerlabs.com) projects.
 
 ---
 
@@ -351,5 +356,27 @@ dist/
 
 ---
 
-*Last updated: 2026-02-04*
-*Applies to: SCQCS, SecuraCV, ERRERLabs, and related projects*
+## Adapting This Checklist
+
+This checklist is designed to be copied and modified. To adapt it for your project:
+
+1. **Fork or copy** this file to your repository
+2. **Replace domain references** (`scqcs.com` → `yourdomain.com`)
+3. **Adjust CSP** for your specific resource needs (fonts, images, APIs)
+4. **Add project-specific items** to the pre-launch checklist
+5. **Remove sections** that don't apply to your stack
+
+### Hosting Platforms
+
+| Platform | Headers File | Redirects File |
+|----------|--------------|----------------|
+| Netlify | `_headers` | `_redirects` |
+| Vercel | `vercel.json` | `vercel.json` |
+| Cloudflare Pages | `_headers` | `_redirects` |
+| GitHub Pages | Not supported (use meta tags) | Not supported |
+
+---
+
+*Maintained by [ERRERLabs](https://errerlabs.com). Contributions welcome.*
+
+*Free to use, modify, and redistribute. No attribution required.*

@@ -29,13 +29,74 @@ SCQCS defines architectural patterns for systems that need both privacy and acco
 
 Visit [scqcs.com](https://scqcs.com) for the full framework documentation.
 
-## Related
+---
+
+## Use This As a Template
+
+This repository is designed to be a **reference implementation** for secure, privacy-respecting static sites. Feel free to use it as a starting point for your own projects.
+
+### What's Included
+
+| File | Purpose |
+|------|---------|
+| `_headers` | Netlify security headers (CSP, HSTS, COOP, etc.) |
+| `_redirects` | URL routing rules |
+| `robots.txt` | Search engine and AI crawler directives |
+| `sitemap.xml` | SEO sitemap |
+| `llms.txt` | AI/LLM-readable site summary |
+| `security.txt` | Security vulnerability reporting (RFC 9116) |
+| `humans.txt` | Team and site transparency |
+| `SITE_SECURITY_CHECKLIST.md` | Comprehensive pre-launch checklist |
+
+### Quick Start
+
+1. **Fork or clone** this repository
+2. **Replace content** in `index.html` with your own
+3. **Update meta tags** — change `scqcs.com` to your domain
+4. **Update `site.webmanifest`** — change app name and colors
+5. **Update security/SEO files** — replace domain references
+6. **Deploy to Netlify** — `_headers` and `_redirects` work automatically
+
+### Security Headers You Get
+
+```
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+Content-Security-Policy: [strict policy, no unsafe-inline for scripts]
+Cross-Origin-Opener-Policy: same-origin
+Permissions-Policy: camera=(), microphone=(), geolocation=()...
+```
+
+### Checklist
+
+See [`SITE_SECURITY_CHECKLIST.md`](SITE_SECURITY_CHECKLIST.md) for a comprehensive guide covering:
+- Security headers and CSP configuration
+- SEO meta tags and structured data
+- AI/LLM discoverability
+- Legal copy guidelines
+- Pre-launch audit checklist
+
+---
+
+## Related Projects
 
 - [SecuraCV](https://securacv.netlify.app) — Privacy-preserving computer vision using SCQCS patterns
 - [ERRERLabs](https://errerlabs.com) — Project home
 
+## Contributing
+
+Found an issue or have a suggestion? This project welcomes:
+- Bug reports for the website
+- Improvements to the security checklist
+- Suggestions for the framework documentation
+
 ## License
+
+MIT License. See [LICENSE](LICENSE).
 
 The architectural patterns described may be implemented freely. Attribution appreciated but not required.
 
-See the website's [legal section](https://scqcs.com/#legal) for full terms.
+---
+
+*Built with security and privacy as defaults, not afterthoughts.*
