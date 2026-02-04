@@ -376,8 +376,8 @@
 
     .scintillate span {
       display: inline-block;
-      animation: scintillate 9s ease-in-out infinite;
-      animation-delay: calc(3s + (var(--i) * 0.15s));
+      animation: scintillate 5s ease-in-out infinite;
+      animation-delay: calc(1s + (var(--i) * 0.2s));
     }
 
     @keyframes scintillate {
@@ -386,21 +386,29 @@
         text-shadow: none;
         color: var(--text);
       }
-      2% {
+      3% {
         opacity: 1;
         color: #fff;
         text-shadow:
-          0 0 8px rgba(255,255,255,0.8),
+          0 0 10px rgba(255,255,255,0.9),
+          0 0 20px rgba(245,197,24,0.6),
+          0 0 30px rgba(110,179,255,0.4);
+      }
+      6% {
+        opacity: 1;
+        color: #fff;
+        text-shadow:
+          0 0 8px rgba(255,255,255,0.7),
           0 0 16px rgba(245,197,24,0.5),
           0 0 24px rgba(110,179,255,0.3);
       }
-      4% {
+      9% {
         opacity: 1;
         text-shadow:
-          0 0 4px rgba(255,255,255,0.5),
-          0 0 12px rgba(245,197,24,0.3);
+          0 0 4px rgba(255,255,255,0.4),
+          0 0 10px rgba(245,197,24,0.2);
       }
-      6% {
+      12% {
         opacity: 1;
         text-shadow: none;
       }
@@ -494,8 +502,11 @@
       border: none;
       cursor: pointer;
       padding: 8px;
+      position: relative;
       z-index: 102;
       -webkit-tap-highlight-color: transparent;
+      /* Ensure touch targets work on iOS */
+      touch-action: manipulation;
     }
 
     .hamburger-line {
