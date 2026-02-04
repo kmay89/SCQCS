@@ -173,7 +173,22 @@ document.querySelector('.scroll-indicator').addEventListener('click', () => {
 // Copy prompt to clipboard
 // ========================================
 function copyPrompt(button) {
-  const prompt = button.dataset.prompt;
+  // Get the currently visible LLM name based on animation timing
+  const llmItems = document.querySelectorAll('.ai-prompt-llm-item');
+  const animationDuration = 8000; // 8 seconds
+  const now = Date.now();
+  const animationProgress = (now % animationDuration) / animationDuration;
+
+  // Animation keyframes: 0-20%: item 0, 25-45%: item 1, 50-70%: item 2, 75-95%: item 3
+  let currentIndex = 0;
+  if (animationProgress >= 0.25 && animationProgress < 0.50) currentIndex = 1;
+  else if (animationProgress >= 0.50 && animationProgress < 0.75) currentIndex = 2;
+  else if (animationProgress >= 0.75) currentIndex = 3;
+
+  const currentLLM = llmItems[currentIndex]?.textContent || 'Claude';
+
+  // Build the full prompt
+  const prompt = `${currentLLM}, use github.com/kmay89/SCQCS to build me a site about `;
 
   navigator.clipboard.writeText(prompt).then(() => {
     button.classList.add('copied');
