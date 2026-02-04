@@ -15,11 +15,11 @@ Named after Schrodinger's famous thought experiment (as a metaphor, not quantum 
 
 ## Six Principles
 1. Witness, not watcher - Support evidence without enabling surveillance
-2. Audit over trust - Prefer verifiable integrity over promises
-3. Exceptions leave scars - Break-glass access should be hard and never silent
-4. Plan for rotation - Design for cryptographic agility from day one
-5. Local-first when possible - Minimize external dependencies as attack surface
-6. Assume adversarial insiders - Make misuse architecturally difficult
+2. Audit over trust - Cryptographic proofs outlast policies
+3. Exceptions leave fingerprints - Every emergency access is remembered
+4. Plan for rotation - Build migration paths from day one
+5. Local-first when possible - Minimize external dependencies
+6. Design for distrust - Make misuse architecturally difficult
 
 ## Key Terms
 - SCQCS: Schrodinger's Cat Quantum Cryptography & Security (the name references the thought experiment as a metaphor, not quantum computing)
