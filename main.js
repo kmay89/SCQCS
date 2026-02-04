@@ -76,8 +76,14 @@ const VideoManager = {
   prefersReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   errorCount: 0,
   maxErrors: 3,
-  // Store event handler references for cleanup
-  _handlers: {},
+  // Track all event listeners for automatic cleanup
+  _listeners: [],
+
+  // Helper to add and track event listeners
+  _addListener(target, type, handler, options) {
+    target.addEventListener(type, handler, options);
+    this._listeners.push({ target, type, handler, options });
+  },
 
   init() {
     this.video = document.querySelector('.hero-video');
@@ -103,14 +109,14 @@ const VideoManager = {
   },
 
   setupVisibilityHandler() {
-    this._handlers.visibility = () => {
+    const handler = () => {
       if (document.hidden) {
         this.pause();
       } else if (this.isVisible) {
         this.play();
       }
     };
-    document.addEventListener('visibilitychange', this._handlers.visibility);
+    this._addListener(document, 'visibilitychange', handler);
   },
 
   setupIntersectionObserver() {
@@ -134,7 +140,7 @@ const VideoManager = {
 
   setupErrorHandler() {
     // Handle video errors gracefully
-    this._handlers.error = (e) => {
+    const errorHandler = (e) => {
       this.errorCount++;
       console.warn('Video error:', e);
 
@@ -142,16 +148,16 @@ const VideoManager = {
         this.disable();
       }
     };
-    this.video.addEventListener('error', this._handlers.error);
+    this._addListener(this.video, 'error', errorHandler);
 
     // Handle stall/waiting events that might indicate memory issues
-    this._handlers.waiting = () => {
+    const waitingHandler = () => {
       if (this.isMobile && this.errorCount > 0) {
         // On mobile with previous errors, be cautious
         this.pause();
       }
     };
-    this.video.addEventListener('waiting', this._handlers.waiting);
+    this._addListener(this.video, 'waiting', waitingHandler);
   },
 
   setupMobileOptimizations() {
@@ -159,7 +165,7 @@ const VideoManager = {
     // Remove loop attribute to control it manually
     this.video.removeAttribute('loop');
 
-    this._handlers.ended = () => {
+    const endedHandler = () => {
       if (!this.isVisible || document.hidden) {
         return; // Don't loop if not visible - this is the main memory saver
       }
@@ -168,28 +174,21 @@ const VideoManager = {
       this.video.currentTime = 0;
       this.play();
     };
-    this.video.addEventListener('ended', this._handlers.ended);
+    this._addListener(this.video, 'ended', endedHandler);
   },
 
   setupCleanup() {
     // Pause video when leaving page, but don't clear src (causes issues with bfcache)
-    this._handlers.pagehide = () => {
-      this.pause();
-    };
-    window.addEventListener('pagehide', this._handlers.pagehide);
-
-    this._handlers.beforeunload = () => {
-      this.pause();
-    };
-    window.addEventListener('beforeunload', this._handlers.beforeunload);
+    this._addListener(window, 'pagehide', () => this.pause());
+    this._addListener(window, 'beforeunload', () => this.pause());
 
     // Handle page restore from bfcache
-    this._handlers.pageshow = (event) => {
+    const pageshowHandler = (event) => {
       if (event.persisted && this.isVisible && !document.hidden) {
         this.play();
       }
     };
-    window.addEventListener('pageshow', this._handlers.pageshow);
+    this._addListener(window, 'pageshow', pageshowHandler);
   },
 
   // Permanently disable video and clean up all listeners
@@ -205,30 +204,11 @@ const VideoManager = {
       this.observer = null;
     }
 
-    // Remove all event listeners
-    if (this._handlers.error) {
-      this.video.removeEventListener('error', this._handlers.error);
-    }
-    if (this._handlers.waiting) {
-      this.video.removeEventListener('waiting', this._handlers.waiting);
-    }
-    if (this._handlers.ended) {
-      this.video.removeEventListener('ended', this._handlers.ended);
-    }
-    if (this._handlers.visibility) {
-      document.removeEventListener('visibilitychange', this._handlers.visibility);
-    }
-    if (this._handlers.pagehide) {
-      window.removeEventListener('pagehide', this._handlers.pagehide);
-    }
-    if (this._handlers.beforeunload) {
-      window.removeEventListener('beforeunload', this._handlers.beforeunload);
-    }
-    if (this._handlers.pageshow) {
-      window.removeEventListener('pageshow', this._handlers.pageshow);
-    }
-
-    this._handlers = {};
+    // Remove all tracked event listeners
+    this._listeners.forEach(({ target, type, handler, options }) => {
+      target.removeEventListener(type, handler, options);
+    });
+    this._listeners = [];
   },
 
   play() {
