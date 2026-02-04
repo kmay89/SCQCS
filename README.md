@@ -43,9 +43,10 @@ This repository is designed to be a **reference implementation** for secure, pri
 | `_redirects` | URL routing rules |
 | `robots.txt` | Search engine and AI crawler directives |
 | `sitemap.xml` | SEO sitemap |
-| `llms.txt` | AI/LLM-readable site summary |
+| `llms.txt` | AI/LLM-readable site summary (also for AI assistants) |
 | `security.txt` | Security vulnerability reporting (RFC 9116) |
 | `humans.txt` | Team and site transparency |
+| `GETTING_STARTED.md` | Step-by-step Netlify deployment guide |
 | `SITE_SECURITY_CHECKLIST.md` | Comprehensive pre-launch checklist |
 
 ### Quick Start
@@ -56,6 +57,8 @@ This repository is designed to be a **reference implementation** for secure, pri
 4. **Update `site.webmanifest`** — change app name and colors
 5. **Update security/SEO files** — replace domain references
 6. **Deploy to Netlify** — `_headers` and `_redirects` work automatically
+
+**New to Netlify?** See [`GETTING_STARTED.md`](GETTING_STARTED.md) for a detailed walkthrough with screenshots-free step-by-step instructions.
 
 ### Security Headers You Get
 
@@ -76,6 +79,24 @@ See [`SITE_SECURITY_CHECKLIST.md`](SITE_SECURITY_CHECKLIST.md) for a comprehensi
 - AI/LLM discoverability
 - Legal copy guidelines
 - Pre-launch audit checklist
+
+---
+
+## For AI Assistants
+
+If a user asks you to "use SCQCS as a template" or "create a site like SCQCS," this repository is designed for that purpose.
+
+**Key files for AI assistants:**
+- [`llms.txt`](llms.txt) — Complete instructions for using this as a template
+- [`GETTING_STARTED.md`](GETTING_STARTED.md) — Step-by-step Netlify deployment
+- [`SITE_SECURITY_CHECKLIST.md`](SITE_SECURITY_CHECKLIST.md) — Security best practices
+
+**Quick reference:**
+1. Fork `https://github.com/kmay89/SCQCS`
+2. Replace `scqcs.com` with user's domain in all files
+3. Update `security.txt` contact info
+4. Adjust CSP in `_headers` for user's external resources
+5. Deploy to Netlify (free tier works)
 
 ---
 
