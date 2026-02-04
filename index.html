@@ -126,14 +126,21 @@
       --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
       --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-      /* Quantum color shift - subtle RGB awareness */
+      /* Quantum color shift - RGB awareness */
       --quantum-hue: 0deg;
+      --quantum-intensity: 0;
     }
 
-    /* Quantum shimmer - a gentle prismatic wave across the page */
+    /* Quantum shimmer - prismatic wave across the page */
     @keyframes quantumShift {
       0% { --quantum-hue: 0deg; }
       100% { --quantum-hue: 360deg; }
+    }
+
+    /* Quantum pulse - the page breathes with color */
+    @keyframes quantumPulse {
+      0%, 100% { --quantum-intensity: 0; }
+      50% { --quantum-intensity: 1; }
     }
 
     @property --quantum-hue {
@@ -142,28 +149,36 @@
       inherits: true;
     }
 
+    @property --quantum-intensity {
+      syntax: '<number>';
+      initial-value: 0;
+      inherits: true;
+    }
+
     html {
-      animation: quantumShift 60s linear infinite;
+      animation:
+        quantumShift 30s linear infinite,
+        quantumPulse 9s ease-in-out infinite 6s;
     }
 
-    /* Apply subtle quantum tint to key elements */
-    .quantum-touch {
-      position: relative;
-    }
-
-    .quantum-touch::after {
+    /* Quantum wash overlay - visible color life */
+    body::before {
       content: '';
-      position: absolute;
+      position: fixed;
       inset: 0;
-      background: linear-gradient(
-        calc(45deg + var(--quantum-hue)),
-        hsla(calc(0 + var(--quantum-hue)), 70%, 60%, 0.02),
-        hsla(calc(120 + var(--quantum-hue)), 70%, 60%, 0.015),
-        hsla(calc(240 + var(--quantum-hue)), 70%, 60%, 0.02)
-      );
       pointer-events: none;
-      border-radius: inherit;
+      z-index: 9999;
+      opacity: calc(0.03 * var(--quantum-intensity));
+      background: linear-gradient(
+        calc(135deg + var(--quantum-hue)),
+        hsla(calc(0 + var(--quantum-hue)), 70%, 55%, 0.6) 0%,
+        hsla(calc(60 + var(--quantum-hue)), 70%, 55%, 0.4) 25%,
+        hsla(calc(180 + var(--quantum-hue)), 70%, 55%, 0.5) 50%,
+        hsla(calc(270 + var(--quantum-hue)), 70%, 55%, 0.4) 75%,
+        hsla(calc(360 + var(--quantum-hue)), 70%, 55%, 0.6) 100%
+      );
       mix-blend-mode: overlay;
+      transition: opacity 0.5s ease;
     }
 
     /* Quantum border glow for cards */
@@ -177,15 +192,15 @@
       inset: -1px;
       background: linear-gradient(
         calc(90deg + var(--quantum-hue)),
-        hsla(calc(0 + var(--quantum-hue)), 80%, 65%, 0.08),
-        hsla(calc(60 + var(--quantum-hue)), 80%, 65%, 0.04),
-        hsla(calc(180 + var(--quantum-hue)), 80%, 65%, 0.08),
-        hsla(calc(300 + var(--quantum-hue)), 80%, 65%, 0.04)
+        hsla(calc(0 + var(--quantum-hue)), 80%, 65%, 0.15),
+        hsla(calc(120 + var(--quantum-hue)), 80%, 65%, 0.08),
+        hsla(calc(240 + var(--quantum-hue)), 80%, 65%, 0.15),
+        hsla(calc(360 + var(--quantum-hue)), 80%, 65%, 0.08)
       );
       border-radius: inherit;
       z-index: -1;
-      opacity: 0;
-      transition: opacity 0.5s ease;
+      opacity: calc(0.4 + (0.6 * var(--quantum-intensity)));
+      transition: opacity 0.3s ease;
     }
 
     .quantum-border:hover::before {
@@ -207,18 +222,6 @@
       background: var(--black);
       color: var(--text);
       line-height: 1.6;
-      /* Quantum page wash - barely perceptible color life */
-      background-image:
-        radial-gradient(
-          ellipse 100% 100% at 50% 0%,
-          hsla(calc(var(--quantum-hue)), 60%, 50%, 0.008) 0%,
-          transparent 50%
-        ),
-        radial-gradient(
-          ellipse 80% 80% at 80% 80%,
-          hsla(calc(120 + var(--quantum-hue)), 60%, 50%, 0.006) 0%,
-          transparent 50%
-        );
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       overflow-x: hidden;
@@ -282,6 +285,12 @@
       justify-content: space-between;
     }
 
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
     .logo {
       display: flex;
       align-items: center;
@@ -323,26 +332,33 @@
 
     .scintillate span {
       display: inline-block;
-      animation: scintillate 4s ease-in-out infinite;
-      animation-delay: calc(var(--i) * 0.4s);
+      animation: scintillate 9s ease-in-out infinite;
+      animation-delay: calc(3s + (var(--i) * 0.15s));
     }
 
     @keyframes scintillate {
-      0%, 85%, 100% {
+      0%, 100% {
         opacity: 1;
         text-shadow: none;
+        color: var(--text);
       }
-      90% {
-        opacity: 0.85;
+      2% {
+        opacity: 1;
+        color: #fff;
         text-shadow:
-          0 0 4px rgba(255,255,255,0.4),
-          0 0 8px rgba(245,197,24,0.2);
+          0 0 8px rgba(255,255,255,0.8),
+          0 0 16px rgba(245,197,24,0.5),
+          0 0 24px rgba(110,179,255,0.3);
       }
-      95% {
+      4% {
         opacity: 1;
         text-shadow:
-          0 0 2px rgba(255,255,255,0.6),
+          0 0 4px rgba(255,255,255,0.5),
           0 0 12px rgba(245,197,24,0.3);
+      }
+      6% {
+        opacity: 1;
+        text-shadow: none;
       }
     }
 
@@ -1686,20 +1702,21 @@
   <!-- Navigation -->
   <nav id="nav">
     <div class="nav-inner">
-      <a href="#" class="logo" data-sound="hover">
-        <div class="logo-icon">
-          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="SCQCS">
-            <rect x="6" y="6" width="28" height="28" stroke="white" stroke-width="2.5" fill="none"/>
-          </svg>
+      <div class="logo-group">
+        <a href="#" class="logo" data-sound="hover">
+          <div class="logo-icon">
+            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="SCQCS">
+              <rect x="6" y="6" width="28" height="28" stroke="white" stroke-width="2.5" fill="none"/>
+            </svg>
+          </div>
+          <span class="logo-text scintillate"><span style="--i:0">S</span><span style="--i:1">C</span><span style="--i:2">Q</span><span style="--i:3">C</span><span style="--i:4">S</span></span>
+        </a>
+        <div class="health-indicator" title="Framework documentation online">
+          <span class="health-dot"></span>
+          <span>Online</span>
         </div>
-        <span class="logo-text scintillate"><span style="--i:0">S</span><span style="--i:1">C</span><span style="--i:2">Q</span><span style="--i:3">C</span><span style="--i:4">S</span></span>
-      </a>
-      
-      <div class="health-indicator" title="Framework documentation online">
-        <span class="health-dot"></span>
-        <span>Online</span>
       </div>
-      
+
       <div class="nav-links">
         <a href="#what" class="nav-link" data-sound="click">About</a>
         <a href="#principles" class="nav-link" data-sound="click">Principles</a>
