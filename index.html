@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="color-scheme" content="dark" />
   <meta name="theme-color" content="#000000" />
   <title>SCQCS — Schrödinger's Cat Quantum Cryptography & Security</title>
@@ -269,7 +269,20 @@
       right: 0;
       z-index: 100;
       padding: 16px 24px;
+      padding-top: calc(16px + env(safe-area-inset-top, 0px));
       transition: background 0.3s ease, backdrop-filter 0.3s ease;
+    }
+
+    /* Black background behind safe area (iPhone notch/dynamic island) */
+    nav::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: env(safe-area-inset-top, 0px);
+      background: var(--black);
+      z-index: -1;
     }
 
     nav.scrolled {
@@ -2228,6 +2241,7 @@
     @media (max-width: 768px) {
       nav {
         padding: 12px 16px;
+        padding-top: calc(12px + env(safe-area-inset-top, 0px));
       }
 
       .nav-links {
@@ -2247,10 +2261,11 @@
         font-size: 16px;
       }
 
+      /* Improved mobile badge visibility */
       .health-indicator {
-        padding: 4px 8px;
-        font-size: 10px;
-        gap: 5px;
+        padding: 6px 10px;
+        font-size: 11px;
+        gap: 6px;
       }
 
       .health-indicator span {
@@ -2258,14 +2273,18 @@
       }
 
       .health-dot {
-        width: 6px;
-        height: 6px;
+        width: 10px;
+        height: 10px;
+      }
+
+      .health-dot::before {
+        inset: -3px;
       }
 
       .no-cookies-tag {
-        padding: 4px 8px;
-        font-size: 10px;
-        gap: 4px;
+        padding: 6px 10px;
+        font-size: 11px;
+        gap: 5px;
       }
 
       .no-cookies-tag span {
@@ -2273,8 +2292,8 @@
       }
 
       .no-cookies-tag svg {
-        width: 10px;
-        height: 10px;
+        width: 14px;
+        height: 14px;
       }
 
       section {
@@ -2426,10 +2445,11 @@
     @media (max-width: 480px) {
       nav {
         padding: 10px 12px;
+        padding-top: calc(10px + env(safe-area-inset-top, 0px));
       }
 
       .logo-group {
-        gap: 8px;
+        gap: 6px;
       }
 
       .logo-icon {
@@ -2442,9 +2462,20 @@
         font-size: 14px;
       }
 
+      /* Keep badges visible on small screens */
       .health-indicator,
       .no-cookies-tag {
-        padding: 3px 6px;
+        padding: 5px 8px;
+      }
+
+      .health-dot {
+        width: 8px;
+        height: 8px;
+      }
+
+      .no-cookies-tag svg {
+        width: 12px;
+        height: 12px;
       }
 
       section {
