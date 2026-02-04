@@ -15,15 +15,16 @@ const SoundSystem = {
   volume: 0.035,
 
   init() {
-    document.addEventListener('click', () => {
-      if (!this.ctx) {
-        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-    }, { once: true });
+    // AudioContext now created lazily in play() for first-click sound
   },
 
   play(type) {
-    if (!this.ctx || !this.enabled) return;
+    if (!this.enabled) return;
+
+    // Lazily create AudioContext on first sound (requires user gesture)
+    if (!this.ctx) {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
 
     // Helper to create connected oscillator + gain node pair
     const createVoice = () => {
