@@ -179,11 +179,15 @@ function copyPrompt(button) {
   const now = Date.now();
   const animationProgress = (now % animationDuration) / animationDuration;
 
-  // Animation keyframes: 0-20%: item 0, 25-45%: item 1, 50-70%: item 2, 75-95%: item 3
-  let currentIndex = 0;
-  if (animationProgress >= 0.25 && animationProgress < 0.50) currentIndex = 1;
-  else if (animationProgress >= 0.50 && animationProgress < 0.75) currentIndex = 2;
-  else if (animationProgress >= 0.75) currentIndex = 3;
+  // Keyframes matching the CSS animation `rotate-llm`
+  const keyframes = [
+    { start: 0.75, index: 3 }, // 75-95%
+    { start: 0.50, index: 2 }, // 50-70%
+    { start: 0.25, index: 1 }, // 25-45%
+    { start: 0.00, index: 0 }  // 0-20%
+  ];
+  const currentKeyframe = keyframes.find(kf => animationProgress >= kf.start);
+  const currentIndex = currentKeyframe ? currentKeyframe.index : 0;
 
   const currentLLM = llmItems[currentIndex]?.textContent || 'Claude';
 
@@ -214,3 +218,8 @@ function copyPrompt(button) {
     }, 2000);
   });
 }
+
+// Attach event listeners to copy buttons
+document.querySelectorAll('.ai-prompt-copy').forEach(button => {
+  button.addEventListener('click', () => copyPrompt(button));
+});
