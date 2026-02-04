@@ -422,8 +422,9 @@ function copyPrompt(button) {
 
     fallbackTextarea.value = prompt;
     fallbackTextarea.select();
-    document.execCommand('copy');
-    showCopied();
+    if (document.execCommand('copy')) {
+      showCopied();
+    }
   });
 }
 
