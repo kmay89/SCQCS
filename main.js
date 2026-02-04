@@ -65,6 +65,196 @@ const SoundSystem = {
 SoundSystem.init();
 
 // ========================================
+// Video Manager - Mobile memory optimization
+// ========================================
+const VideoManager = {
+  video: null,
+  observer: null,
+  isVisible: true,
+  // Use modern userAgentData API with fallback to regex
+  isMobile: navigator.userAgentData?.mobile ?? /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+  prefersReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  errorCount: 0,
+  maxErrors: 3,
+  // Store event handler references for cleanup
+  _handlers: {},
+
+  init() {
+    this.video = document.querySelector('.hero-video');
+    if (!this.video) return;
+
+    // If user prefers reduced motion, show poster only
+    if (this.prefersReducedMotion) {
+      this.video.pause();
+      this.video.removeAttribute('autoplay');
+      this.video.removeAttribute('loop');
+      return;
+    }
+
+    this.setupVisibilityHandler();
+    this.setupIntersectionObserver();
+    this.setupErrorHandler();
+    this.setupCleanup();
+
+    // On mobile, be more aggressive about resource management
+    if (this.isMobile) {
+      this.setupMobileOptimizations();
+    }
+  },
+
+  setupVisibilityHandler() {
+    this._handlers.visibility = () => {
+      if (document.hidden) {
+        this.pause();
+      } else if (this.isVisible) {
+        this.play();
+      }
+    };
+    document.addEventListener('visibilitychange', this._handlers.visibility);
+  },
+
+  setupIntersectionObserver() {
+    // Pause video when scrolled out of view
+    this.observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        this.isVisible = entry.isIntersecting;
+        if (entry.isIntersecting && !document.hidden) {
+          this.play();
+        } else {
+          this.pause();
+        }
+      });
+    }, {
+      threshold: 0.1,
+      rootMargin: '50px'
+    });
+
+    this.observer.observe(this.video);
+  },
+
+  setupErrorHandler() {
+    // Handle video errors gracefully
+    this._handlers.error = (e) => {
+      this.errorCount++;
+      console.warn('Video error:', e);
+
+      if (this.errorCount >= this.maxErrors) {
+        this.disable();
+      }
+    };
+    this.video.addEventListener('error', this._handlers.error);
+
+    // Handle stall/waiting events that might indicate memory issues
+    this._handlers.waiting = () => {
+      if (this.isMobile && this.errorCount > 0) {
+        // On mobile with previous errors, be cautious
+        this.pause();
+      }
+    };
+    this.video.addEventListener('waiting', this._handlers.waiting);
+  },
+
+  setupMobileOptimizations() {
+    // On mobile, reset video periodically to prevent memory buildup
+    // Remove loop attribute to control it manually
+    this.video.removeAttribute('loop');
+
+    let loopCount = 0;
+    const maxLoops = 5; // Reset after 5 loops on mobile
+
+    this._handlers.ended = () => {
+      if (!this.isVisible || document.hidden) {
+        return; // Don't loop if not visible
+      }
+
+      loopCount++;
+
+      if (loopCount >= maxLoops) {
+        loopCount = 0;
+        // Reload the video to clear memory. load() also resets currentTime.
+        // Use 'canplay' event to play once ready, avoiding race condition.
+        this.video.addEventListener('canplay', () => this.play(), { once: true });
+        this.video.load();
+      } else {
+        this.video.currentTime = 0;
+        this.play();
+      }
+    };
+    this.video.addEventListener('ended', this._handlers.ended);
+  },
+
+  setupCleanup() {
+    this._handlers.pagehide = () => {
+      this.pause();
+      if (this.video) {
+        this.video.src = '';
+        this.video.load();
+      }
+    };
+    window.addEventListener('pagehide', this._handlers.pagehide);
+
+    this._handlers.beforeunload = () => {
+      this.pause();
+    };
+    window.addEventListener('beforeunload', this._handlers.beforeunload);
+  },
+
+  // Permanently disable video and clean up all listeners
+  disable() {
+    this.video.pause();
+    this.video.removeAttribute('autoplay');
+    this.video.removeAttribute('loop');
+    this.video.load(); // Reset to show poster
+
+    // Disconnect observer
+    if (this.observer) {
+      this.observer.disconnect();
+      this.observer = null;
+    }
+
+    // Remove all event listeners
+    if (this._handlers.error) {
+      this.video.removeEventListener('error', this._handlers.error);
+    }
+    if (this._handlers.waiting) {
+      this.video.removeEventListener('waiting', this._handlers.waiting);
+    }
+    if (this._handlers.ended) {
+      this.video.removeEventListener('ended', this._handlers.ended);
+    }
+    if (this._handlers.visibility) {
+      document.removeEventListener('visibilitychange', this._handlers.visibility);
+    }
+
+    this._handlers = {};
+  },
+
+  play() {
+    if (!this.video || this.prefersReducedMotion || this.errorCount >= this.maxErrors) return;
+
+    const playPromise = this.video.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(err => {
+        // Autoplay was prevented - this is fine on mobile
+        console.log('Video autoplay prevented:', err.message);
+      });
+    }
+  },
+
+  pause() {
+    if (!this.video) return;
+    this.video.pause();
+  }
+};
+
+// Initialize after DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => VideoManager.init());
+} else {
+  VideoManager.init();
+}
+
+// ========================================
 // Attach sound events
 // ========================================
 document.querySelectorAll('[data-sound="click"]').forEach(el => {
