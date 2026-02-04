@@ -71,10 +71,13 @@ const VideoManager = {
   video: null,
   observer: null,
   isVisible: true,
-  isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+  // Use modern userAgentData API with fallback to regex
+  isMobile: navigator.userAgentData?.mobile ?? /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
   prefersReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   errorCount: 0,
   maxErrors: 3,
+  // Store event handler references for cleanup
+  _handlers: {},
 
   init() {
     this.video = document.querySelector('.hero-video');
@@ -100,14 +103,14 @@ const VideoManager = {
   },
 
   setupVisibilityHandler() {
-    // Pause video when tab/page is not visible
-    document.addEventListener('visibilitychange', () => {
+    this._handlers.visibility = () => {
       if (document.hidden) {
         this.pause();
       } else if (this.isVisible) {
         this.play();
       }
-    });
+    };
+    document.addEventListener('visibilitychange', this._handlers.visibility);
   },
 
   setupIntersectionObserver() {
@@ -131,29 +134,24 @@ const VideoManager = {
 
   setupErrorHandler() {
     // Handle video errors gracefully
-    this.video.addEventListener('error', (e) => {
+    this._handlers.error = (e) => {
       this.errorCount++;
       console.warn('Video error:', e);
 
       if (this.errorCount >= this.maxErrors) {
-        // Stop trying after multiple errors - show poster image instead
-        this.video.pause();
-        this.video.removeAttribute('autoplay');
-        this.video.removeAttribute('loop');
-        this.video.load(); // Reset to show poster
-        if (this.observer) {
-          this.observer.disconnect();
-        }
+        this.disable();
       }
-    });
+    };
+    this.video.addEventListener('error', this._handlers.error);
 
     // Handle stall/waiting events that might indicate memory issues
-    this.video.addEventListener('waiting', () => {
+    this._handlers.waiting = () => {
       if (this.isMobile && this.errorCount > 0) {
         // On mobile with previous errors, be cautious
         this.pause();
       }
-    });
+    };
+    this.video.addEventListener('waiting', this._handlers.waiting);
   },
 
   setupMobileOptimizations() {
@@ -164,38 +162,71 @@ const VideoManager = {
     let loopCount = 0;
     const maxLoops = 5; // Reset after 5 loops on mobile
 
-    this.video.addEventListener('ended', () => {
+    this._handlers.ended = () => {
+      if (!this.isVisible || document.hidden) {
+        return; // Don't loop if not visible
+      }
+
       loopCount++;
 
       if (loopCount >= maxLoops) {
         loopCount = 0;
-        // Brief pause and reload to clear memory buffer
-        this.video.currentTime = 0;
+        // Reload the video to clear memory. load() also resets currentTime.
+        // Use 'canplay' event to play once ready, avoiding race condition.
+        this.video.addEventListener('canplay', () => this.play(), { once: true });
         this.video.load();
-      }
-
-      // Continue looping if visible
-      if (this.isVisible && !document.hidden) {
+      } else {
         this.video.currentTime = 0;
         this.play();
       }
-    });
+    };
+    this.video.addEventListener('ended', this._handlers.ended);
   },
 
   setupCleanup() {
-    // Clean up resources when page unloads
-    window.addEventListener('pagehide', () => {
+    this._handlers.pagehide = () => {
       this.pause();
       if (this.video) {
         this.video.src = '';
         this.video.load();
       }
-    });
+    };
+    window.addEventListener('pagehide', this._handlers.pagehide);
 
-    // Also handle beforeunload for older browsers
-    window.addEventListener('beforeunload', () => {
+    this._handlers.beforeunload = () => {
       this.pause();
-    });
+    };
+    window.addEventListener('beforeunload', this._handlers.beforeunload);
+  },
+
+  // Permanently disable video and clean up all listeners
+  disable() {
+    this.video.pause();
+    this.video.removeAttribute('autoplay');
+    this.video.removeAttribute('loop');
+    this.video.load(); // Reset to show poster
+
+    // Disconnect observer
+    if (this.observer) {
+      this.observer.disconnect();
+      this.observer = null;
+    }
+
+    // Remove all event listeners
+    if (this._handlers.error) {
+      this.video.removeEventListener('error', this._handlers.error);
+    }
+    if (this._handlers.waiting) {
+      this.video.removeEventListener('waiting', this._handlers.waiting);
+    }
+    if (this._handlers.ended) {
+      this.video.removeEventListener('ended', this._handlers.ended);
+    }
+    if (this._handlers.visibility) {
+      document.removeEventListener('visibilitychange', this._handlers.visibility);
+    }
+
+    this._handlers = {};
   },
 
   play() {
