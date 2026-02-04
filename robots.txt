@@ -1,0 +1,5 @@
+# robots.txt for scqcs.com
+User-agent: *
+Allow: /
+
+Sitemap: https://scqcs.com/sitemap.xml
