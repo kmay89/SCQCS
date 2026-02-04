@@ -684,6 +684,160 @@
       50% { transform: scale(1.15); }
     }
 
+    /* Hero AI Prompt - Floating "external" appearance */
+    .hero-ai-prompt-wrapper {
+      margin-top: 48px;
+      perspective: 1000px;
+    }
+
+    .hero-ai-prompt {
+      background: linear-gradient(145deg, rgba(15, 20, 30, 0.95) 0%, rgba(10, 15, 25, 0.98) 100%);
+      border: 1px solid rgba(110, 179, 255, 0.25);
+      border-radius: 12px;
+      padding: 0;
+      font-family: var(--mono);
+      font-size: 14px;
+      position: relative;
+      overflow: hidden;
+      transform: rotateX(2deg) rotateY(-1deg);
+      transform-style: preserve-3d;
+      box-shadow:
+        0 25px 50px -12px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(110, 179, 255, 0.1),
+        0 0 80px -20px rgba(110, 179, 255, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      max-width: 700px;
+      margin: 0 auto;
+      animation: hero-prompt-float 6s ease-in-out infinite;
+    }
+
+    @keyframes hero-prompt-float {
+      0%, 100% { transform: rotateX(2deg) rotateY(-1deg) translateY(0); }
+      50% { transform: rotateX(1deg) rotateY(0deg) translateY(-5px); }
+    }
+
+    .hero-ai-prompt:hover {
+      transform: rotateX(0deg) rotateY(0deg) scale(1.02);
+      box-shadow:
+        0 30px 60px -15px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(110, 179, 255, 0.2),
+        0 0 100px -20px rgba(110, 179, 255, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    /* Window chrome - terminal look */
+    .hero-ai-prompt-chrome {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 14px;
+      background: rgba(0, 0, 0, 0.3);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .hero-ai-prompt-chrome-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .hero-ai-prompt-chrome-dot:nth-child(1) { background: #ff5f57; }
+    .hero-ai-prompt-chrome-dot:nth-child(2) { background: #febc2e; }
+    .hero-ai-prompt-chrome-dot:nth-child(3) { background: #28c840; }
+
+    .hero-ai-prompt-chrome-title {
+      flex: 1;
+      text-align: center;
+      font-family: var(--sans);
+      font-size: 11px;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .hero-ai-prompt-content {
+      padding: 20px 24px;
+      position: relative;
+    }
+
+    .hero-ai-prompt .ai-prompt-text {
+      color: var(--text-secondary);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0;
+      line-height: 1.8;
+      padding-right: 130px;
+    }
+
+    .hero-ai-prompt .prompt-label {
+      color: var(--success);
+      margin-right: 8px;
+      font-weight: 600;
+    }
+
+    .hero-ai-prompt .ai-prompt-copy {
+      position: absolute;
+      top: 50%;
+      right: 16px;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: rgba(110, 179, 255, 0.15);
+      border: 1px solid rgba(110, 179, 255, 0.3);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .hero-ai-prompt .ai-prompt-copy:hover {
+      background: rgba(110, 179, 255, 0.25);
+      border-color: rgba(110, 179, 255, 0.5);
+      color: var(--text);
+    }
+
+    .hero-ai-prompt .ai-prompt-copy.copied {
+      background: rgba(0, 255, 136, 0.2);
+      border-color: rgba(0, 255, 136, 0.4);
+      color: var(--success);
+    }
+
+    .hero-ai-prompt .ai-prompt-copy svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .hero-ai-prompt .ai-prompt-copy .copy-text { display: inline; }
+    .hero-ai-prompt .ai-prompt-copy .copied-text { display: none; }
+    .hero-ai-prompt .ai-prompt-copy.copied .copy-text { display: none; }
+    .hero-ai-prompt .ai-prompt-copy.copied .copied-text { display: inline; }
+
+    /* Animated gradient border effect */
+    .hero-ai-prompt::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #cc9b7a, #10a37f, #4285f4, #615eff, #cc9b7a);
+      background-size: 200% 100%;
+      animation: hero-prompt-gradient 3s linear infinite;
+    }
+
+    @keyframes hero-prompt-gradient {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+
     /* Scroll indicator */
     .scroll-indicator {
       position: absolute;
@@ -2185,6 +2339,33 @@
         margin-top: 20px;
       }
 
+      .hero-ai-prompt-wrapper {
+        margin-top: 32px;
+        padding: 0 16px;
+      }
+
+      .hero-ai-prompt {
+        font-size: 13px;
+        transform: none;
+        animation: none;
+      }
+
+      .hero-ai-prompt:hover {
+        transform: scale(1.01);
+      }
+
+      .hero-ai-prompt .ai-prompt-text {
+        padding-right: 0;
+        padding-bottom: 50px;
+      }
+
+      .hero-ai-prompt .ai-prompt-copy {
+        top: auto;
+        bottom: 16px;
+        right: 16px;
+        transform: none;
+      }
+
       .scroll-indicator {
         bottom: 24px;
       }
@@ -2294,6 +2475,46 @@
         padding: 12px 20px;
         font-size: 13px;
         border-radius: 12px;
+      }
+
+      .hero-ai-prompt-wrapper {
+        margin-top: 24px;
+        padding: 0 8px;
+      }
+
+      .hero-ai-prompt {
+        font-size: 12px;
+      }
+
+      .hero-ai-prompt-chrome {
+        padding: 8px 12px;
+      }
+
+      .hero-ai-prompt-chrome-dot {
+        width: 8px;
+        height: 8px;
+      }
+
+      .hero-ai-prompt-chrome-title {
+        font-size: 10px;
+      }
+
+      .hero-ai-prompt-content {
+        padding: 16px;
+      }
+
+      .hero-ai-prompt .ai-prompt-copy {
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+
+      .hero-ai-prompt .ai-prompt-copy .copy-text,
+      .hero-ai-prompt .ai-prompt-copy .copied-text {
+        display: none;
+      }
+
+      .hero-ai-prompt .ai-prompt-copy.copied .copied-text {
+        display: none;
       }
 
       .principle-card {
@@ -2428,6 +2649,43 @@
         </svg>
         Launch secure in minutes
       </a>
+
+      <div class="hero-ai-prompt-wrapper">
+        <div class="hero-ai-prompt">
+          <div class="hero-ai-prompt-chrome">
+            <span class="hero-ai-prompt-chrome-dot"></span>
+            <span class="hero-ai-prompt-chrome-dot"></span>
+            <span class="hero-ai-prompt-chrome-dot"></span>
+            <span class="hero-ai-prompt-chrome-title">AI Assistant</span>
+          </div>
+          <div class="hero-ai-prompt-content">
+            <button class="ai-prompt-copy interactive" data-sound="click" onclick="copyPrompt(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              <span class="copy-text">Copy</span>
+              <span class="copied-text">Copied!</span>
+            </button>
+            <div class="ai-prompt-text">
+              <span class="prompt-label">&gt;</span>
+              <span class="ai-prompt-llm">
+                <span class="ai-prompt-llm-inner">
+                  <span class="ai-prompt-llm-item">Claude</span>
+                  <span class="ai-prompt-llm-item">ChatGPT</span>
+                  <span class="ai-prompt-llm-item">Gemini</span>
+                  <span class="ai-prompt-llm-item">Qwen</span>
+                  <span class="ai-prompt-llm-item">Claude</span>
+                </span>
+              </span>
+              <span>, use </span>
+              <span class="ai-prompt-url">github.com/kmay89/SCQCS</span>
+              <span class="ai-prompt-action">&nbsp;to build me a site about&nbsp;</span>
+              <span class="ai-prompt-placeholder">your idea here</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="scroll-indicator" data-sound="click">
