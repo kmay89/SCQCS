@@ -1,0 +1,1949 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#000000" />
+  <title>SCQCS — Schrödinger's Cat Quantum Cryptography & Security</title>
+  <meta name="description" content="SCQCS is a privacy-first security framework built on append-only logging, sealed storage, and accountable access patterns." />
+  <meta property="og:title" content="SCQCS — Schrödinger's Cat Quantum Cryptography & Security" />
+  <meta property="og:description" content="A privacy-first security framework. Append-only logs. Sealed storage. Access that leaves receipts." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://scqcs.com" />
+  <meta property="og:image" content="https://scqcs.com/scqcs-poster.jpeg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="SCQCS — Privacy-first Security Framework" />
+  <meta name="twitter:description" content="Sealed until observed. Observation leaves receipts." />
+  
+  <!-- Favicons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="icon" href="favicon.ico">
+  <link rel="manifest" href="site.webmanifest">
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    
+    :root {
+      --black: #000000;
+      --surface: #0a0a0a;
+      --surface-2: #111111;
+      --surface-3: #1a1a1a;
+      --border: rgba(255,255,255,0.08);
+      --border-hover: rgba(255,255,255,0.15);
+      --text: #ffffff;
+      --text-secondary: rgba(255,255,255,0.7);
+      --text-tertiary: rgba(255,255,255,0.5);
+      --accent: #f5c518;
+      --accent-glow: rgba(245,197,24,0.15);
+      --accent-soft: rgba(245,197,24,0.08);
+      --blue: #6eb3ff;
+      --blue-glow: rgba(110,179,255,0.15);
+      --danger: #ff4d6d;
+      --success: #00ff88;
+      --mono: 'SF Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--black);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    ::selection {
+      background: var(--accent);
+      color: var(--black);
+    }
+
+    /* Smooth scroll reveal animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
+    }
+    
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* Micro interaction classes */
+    .interactive {
+      cursor: pointer;
+      transition: transform 0.2s var(--ease-spring);
+    }
+    
+    .interactive:active {
+      transform: scale(0.98);
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px 24px;
+      transition: background 0.3s ease, backdrop-filter 0.3s ease;
+    }
+
+    nav.scrolled {
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: transform 0.3s var(--ease-out-expo);
+      background: var(--black);
+    }
+
+    .logo-icon img,
+    .logo-icon svg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .logo:hover .logo-icon {
+      transform: rotate(-5deg) scale(1.05);
+    }
+
+    .logo-text {
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.3px;
+    }
+
+    /* Health indicator */
+    .health-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(0, 255, 136, 0.06);
+      border: 1px solid rgba(0, 255, 136, 0.15);
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--success);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .health-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      position: relative;
+    }
+
+    .health-dot::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      background: var(--success);
+      border-radius: 50%;
+      opacity: 0.4;
+      animation: healthPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes healthPulse {
+      0%, 100% { transform: scale(0.5); opacity: 0.4; }
+      50% { transform: scale(1.3); opacity: 0; }
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-link {
+      padding: 8px 16px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+      background: rgba(255,255,255,0.05);
+    }
+
+    .nav-cta {
+      padding: 10px 20px;
+      background: var(--text);
+      color: var(--black);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 100px;
+      transition: all 0.3s var(--ease-out-expo);
+    }
+
+    .nav-cta:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(255,255,255,0.2);
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse 80% 50% at 50% 0%, var(--accent-soft) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 70% 20%, var(--blue-glow) 0%, transparent 50%);
+      z-index: 0;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 900px;
+    }
+
+    /* Hero video container - above text, contained */
+    .hero-video-container {
+      width: 260px;
+      height: 260px;
+      margin: 0 auto 48px;
+      border-radius: 32px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      position: relative;
+      box-shadow: 
+        0 0 0 1px rgba(255,255,255,0.05),
+        0 25px 60px rgba(0,0,0,0.6),
+        0 0 120px var(--accent-soft);
+    }
+
+    .hero-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hero-video-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, transparent 40%, var(--black) 100%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+
+    .hero-badge-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--accent-glow); }
+      50% { opacity: 0.7; box-shadow: 0 0 0 8px transparent; }
+    }
+
+    .hero-title {
+      font-size: clamp(40px, 7vw, 68px);
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1.05;
+      margin-bottom: 20px;
+    }
+
+    .hero-title-gradient {
+      background: linear-gradient(135deg, var(--text) 0%, var(--text-secondary) 50%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(16px, 2.2vw, 19px);
+      color: var(--text-secondary);
+      max-width: 540px;
+      margin: 0 auto 36px;
+      line-height: 1.65;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 28px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 14px;
+      transition: all 0.3s var(--ease-out-expo);
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--text);
+      color: var(--black);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 40px rgba(255,255,255,0.15);
+    }
+
+    .btn-secondary {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--surface-3);
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+
+    .btn-icon {
+      width: 18px;
+      height: 18px;
+      transition: transform 0.2s ease;
+    }
+
+    .btn:hover .btn-icon {
+      transform: translateY(2px);
+    }
+
+    .btn-secondary:hover .btn-icon {
+      transform: translate(2px, -2px);
+    }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-tertiary);
+      font-size: 12px;
+      animation: bob 2s ease infinite;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.2s ease;
+    }
+
+    .scroll-indicator:hover {
+      opacity: 1;
+    }
+
+    @keyframes bob {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(8px); }
+    }
+
+    .scroll-indicator svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    /* Section styling */
+    section {
+      padding: 120px 24px;
+      position: relative;
+    }
+
+    .section-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    .section-label::before {
+      content: '';
+      width: 20px;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 1px;
+    }
+
+    .section-title {
+      font-size: clamp(36px, 5vw, 56px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      margin-bottom: 24px;
+      line-height: 1.1;
+    }
+
+    .section-description {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      line-height: 1.7;
+    }
+
+    /* What is SCQCS section */
+    .what-section {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .what-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      margin-top: 64px;
+      align-items: center;
+    }
+
+    .what-content h3 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      letter-spacing: -0.5px;
+      color: var(--text-secondary);
+    }
+
+    .what-content p {
+      color: var(--text-secondary);
+      font-size: 16px;
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .what-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    .what-visual {
+      display: flex;
+      justify-content: center;
+    }
+
+    .what-visual img {
+      max-width: 300px;
+      width: 100%;
+      filter: drop-shadow(0 30px 60px rgba(245,197,24,0.12));
+      transition: transform 0.5s var(--ease-out-expo);
+    }
+
+    .what-visual:hover img {
+      transform: scale(1.05) rotate(2deg);
+    }
+
+    /* Core Patterns section - NOW 3 ITEMS */
+    .patterns-section {
+      background: var(--black);
+    }
+
+    .patterns-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-top: 64px;
+    }
+
+    .pattern-card {
+      text-align: center;
+      padding: 40px 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      transition: all 0.4s var(--ease-out-expo);
+    }
+
+    .pattern-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    .pattern-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 24px;
+      background: linear-gradient(135deg, var(--surface-3) 0%, var(--surface-2) 100%);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      transition: all 0.3s var(--ease-out-expo);
+    }
+
+    .pattern-card:hover .pattern-icon {
+      transform: scale(1.1);
+      border-color: var(--accent);
+      box-shadow: 0 0 40px var(--accent-glow);
+    }
+
+    .pattern-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.3px;
+    }
+
+    .pattern-text {
+      color: var(--text-secondary);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    /* Principles cards */
+    .principles-section {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+
+    .principles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 24px;
+      margin-top: 64px;
+    }
+
+    .principle-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 32px;
+      transition: all 0.4s var(--ease-out-expo);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .principle-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--accent-soft) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .principle-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+    }
+
+    .principle-card:hover::before {
+      opacity: 1;
+    }
+
+    .principle-number {
+      position: relative;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .principle-number::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .principle-title {
+      position: relative;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.3px;
+    }
+
+    .principle-text {
+      position: relative;
+      color: var(--text-secondary);
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .principle-tags {
+      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .principle-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 6px 12px;
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      color: var(--text-tertiary);
+      transition: all 0.2s ease;
+    }
+
+    .principle-card:hover .principle-tag {
+      border-color: var(--border-hover);
+    }
+
+    /* Architecture section */
+    .architecture-section {
+      background: var(--black);
+      border-top: 1px solid var(--border);
+    }
+
+    .arch-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 32px;
+      margin-top: 64px;
+      align-items: start;
+    }
+
+    .arch-visual {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      overflow: hidden;
+    }
+
+    .arch-header {
+      padding: 24px 28px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .arch-header-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .arch-header-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .arch-code {
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.8;
+      padding: 24px 28px;
+      background: rgba(0,0,0,0.3);
+    }
+
+    .arch-code .dim { color: var(--text-tertiary); }
+    .arch-code .key { color: var(--blue); }
+    .arch-code .val { color: var(--text); }
+    .arch-code .ok { color: var(--success); }
+    .arch-code .warn { color: var(--accent); }
+    .arch-code .bad { color: var(--danger); }
+
+    .arch-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .arch-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      transition: all 0.3s var(--ease-out-expo);
+    }
+
+    .arch-card:hover {
+      border-color: var(--border-hover);
+    }
+
+    .arch-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .arch-card-title svg {
+      width: 20px;
+      height: 20px;
+      color: var(--accent);
+    }
+
+    .arch-card-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .arch-list {
+      list-style: none;
+      margin-top: 16px;
+    }
+
+    .arch-list li {
+      font-size: 13px;
+      color: var(--text-secondary);
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .arch-list li:last-child {
+      border-bottom: none;
+    }
+
+    .arch-list .check {
+      color: var(--success);
+    }
+
+    .arch-list .cross {
+      color: var(--danger);
+    }
+
+    /* Break-glass section */
+    .breakglass-section {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+
+    .breakglass-visual {
+      margin-top: 64px;
+      background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface-3) 100%);
+      border: 1px solid var(--border);
+      border-radius: 32px;
+      padding: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .breakglass-visual::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 200px;
+      background: linear-gradient(180deg, rgba(255,77,109,0.06) 0%, transparent 100%);
+    }
+
+    .breakglass-header {
+      position: relative;
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .breakglass-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: linear-gradient(135deg, rgba(255,77,109,0.15) 0%, rgba(255,77,109,0.08) 100%);
+      border: 2px solid rgba(255,77,109,0.25);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      transition: all 0.3s var(--ease-out-expo);
+    }
+
+    .breakglass-visual:hover .breakglass-icon {
+      transform: scale(1.05);
+      box-shadow: 0 0 40px rgba(255,77,109,0.15);
+    }
+
+    .breakglass-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .breakglass-subtitle {
+      color: var(--text-secondary);
+      font-size: 16px;
+    }
+
+    .breakglass-steps {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .breakglass-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      text-align: center;
+      transition: all 0.3s var(--ease-out-expo);
+    }
+
+    .breakglass-step:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+    }
+
+    .step-number {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 16px;
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .step-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .step-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    /* Ecosystem section */
+    .ecosystem-section {
+      background: var(--black);
+      border-top: 1px solid var(--border);
+    }
+
+    .ecosystem-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 64px;
+    }
+
+    .ecosystem-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 32px;
+      transition: all 0.3s var(--ease-out-expo);
+    }
+
+    .ecosystem-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+    }
+
+    .ecosystem-icon {
+      width: 56px;
+      height: 56px;
+      margin-bottom: 20px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      transition: all 0.3s var(--ease-out-expo);
+    }
+
+    .ecosystem-card:hover .ecosystem-icon {
+      transform: scale(1.1);
+    }
+
+    .ecosystem-card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .ecosystem-card p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .ecosystem-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: gap 0.2s ease;
+    }
+
+    .ecosystem-link:hover {
+      gap: 10px;
+    }
+
+    .ecosystem-link svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Legal section - STACKED DRAWERS */
+    .legal-section {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+
+    .legal-notice {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .legal-notice p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .legal-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 32px;
+      max-width: 800px;
+    }
+
+    .legal-drawer {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s var(--ease-out-expo);
+    }
+
+    .legal-drawer:hover {
+      border-color: var(--border-hover);
+    }
+
+    .legal-drawer[open] {
+      background: var(--surface-3);
+    }
+
+    .legal-drawer summary {
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      font-weight: 600;
+      font-size: 15px;
+      transition: all 0.2s ease;
+      list-style: none;
+    }
+
+    .legal-drawer summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .legal-drawer summary:hover {
+      background: rgba(255,255,255,0.02);
+    }
+
+    .legal-drawer summary::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-right: 2px solid var(--text-tertiary);
+      border-bottom: 2px solid var(--text-tertiary);
+      transform: rotate(-45deg);
+      transition: transform 0.3s var(--ease-out-expo);
+    }
+
+    .legal-drawer[open] summary::after {
+      transform: rotate(45deg);
+    }
+
+    .legal-drawer-content {
+      padding: 0 24px 24px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      animation: slideDown 0.3s var(--ease-out-expo);
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .legal-drawer-content h4 {
+      color: var(--text);
+      font-size: 14px;
+      margin: 20px 0 8px;
+    }
+
+    .legal-drawer-content h4:first-child {
+      margin-top: 0;
+    }
+
+    .legal-drawer-content ul {
+      margin: 12px 0 12px 20px;
+    }
+
+    .legal-drawer-content li {
+      margin: 8px 0;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--black);
+      border-top: 1px solid var(--border);
+      padding: 64px 24px;
+    }
+
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+    }
+
+    .footer-brand {
+      max-width: 300px;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .footer-logo-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--black);
+    }
+
+    .footer-logo-icon img,
+    .footer-logo-icon svg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .footer-logo-text {
+      font-weight: 700;
+      font-size: 20px;
+    }
+
+    .footer-description {
+      color: var(--text-tertiary);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .footer-column h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+    }
+
+    .footer-links {
+      list-style: none;
+    }
+
+    .footer-links li {
+      margin: 12px 0;
+    }
+
+    .footer-links a {
+      color: var(--text-tertiary);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--text);
+    }
+
+    .footer-bottom {
+      max-width: 1200px;
+      margin: 48px auto 0;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-copyright {
+      color: var(--text-tertiary);
+      font-size: 13px;
+    }
+
+    .footer-legal-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-legal-links a {
+      color: var(--text-tertiary);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.2s ease;
+    }
+
+    .footer-legal-links a:hover {
+      color: var(--text);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .arch-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .what-grid {
+        grid-template-columns: 1fr;
+        gap: 48px;
+      }
+      
+      .what-visual {
+        order: -1;
+      }
+      
+      .patterns-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .ecosystem-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .footer-inner {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      nav {
+        padding: 12px 16px;
+      }
+      
+      .nav-links {
+        display: none;
+      }
+      
+      .health-indicator span {
+        display: none;
+      }
+      
+      section {
+        padding: 80px 20px;
+      }
+      
+      .hero {
+        padding: 100px 20px 60px;
+      }
+      
+      .hero-video-container {
+        width: 180px;
+        height: 180px;
+        margin-bottom: 32px;
+      }
+      
+      .breakglass-steps {
+        grid-template-columns: 1fr;
+      }
+      
+      .breakglass-visual {
+        padding: 32px 24px;
+      }
+      
+      .footer-inner {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+      
+      .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+      
+      html {
+        scroll-behavior: auto;
+      }
+      
+      .reveal {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav id="nav">
+    <div class="nav-inner">
+      <a href="#" class="logo" data-sound="hover">
+        <div class="logo-icon">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="SCQCS">
+            <rect x="6" y="6" width="28" height="28" stroke="white" stroke-width="2.5" fill="none"/>
+          </svg>
+        </div>
+        <span class="logo-text">SCQCS</span>
+      </a>
+      
+      <div class="health-indicator" title="Framework documentation online">
+        <span class="health-dot"></span>
+        <span>Online</span>
+      </div>
+      
+      <div class="nav-links">
+        <a href="#what" class="nav-link" data-sound="click">About</a>
+        <a href="#principles" class="nav-link" data-sound="click">Principles</a>
+        <a href="#architecture" class="nav-link" data-sound="click">Architecture</a>
+        <a href="#ecosystem" class="nav-link" data-sound="click">Ecosystem</a>
+        <a href="#contact" class="nav-cta interactive" data-sound="click">Get Involved</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    
+    <div class="hero-content">
+      <!-- Video/Logo Animation - Above text, contained -->
+      <div class="hero-video-container reveal">
+        <video class="hero-video" autoplay muted loop playsinline preload="metadata" poster="scqcs-poster.jpeg">
+          <source src="scqcs-hero.mp4" type="video/mp4" />
+        </video>
+        <div class="hero-video-glow"></div>
+      </div>
+      
+      <div class="hero-badge reveal reveal-delay-1">
+        <span class="hero-badge-dot"></span>
+        <span>Privacy-first security framework</span>
+      </div>
+      
+      <h1 class="hero-title reveal reveal-delay-2">
+        <span class="hero-title-gradient">Sealed until observed.</span><br>
+        Observation leaves receipts.
+      </h1>
+      
+      <p class="hero-subtitle reveal reveal-delay-3">
+        SCQCS defines patterns for append-only logging, sealed storage, and accountable access. A framework for systems where privacy and auditability must coexist.
+      </p>
+      
+      <div class="hero-buttons reveal reveal-delay-4">
+        <a href="#what" class="btn btn-primary interactive" data-sound="click">
+          Learn the framework
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M19 12l-7 7-7-7"/>
+          </svg>
+        </a>
+        <a href="#ecosystem" class="btn btn-secondary interactive" data-sound="click">
+          See implementations
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M7 17L17 7M7 7h10v10"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="scroll-indicator" data-sound="click">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14M19 12l-7 7-7-7"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- What is SCQCS Section -->
+  <section class="what-section" id="what">
+    <div class="section-inner">
+      <div class="what-grid">
+        <div class="what-content reveal">
+          <span class="section-label">The Framework</span>
+          <h2 class="section-title">What is SCQCS?</h2>
+          <h3>Schrödinger's Cat Quantum Cryptography & Security</h3>
+          <p>
+            SCQCS is a set of architectural patterns and security principles for building systems that need both privacy and accountability. Named after the famous thought experiment, it embodies a core insight: <strong>data should remain sealed until deliberately observed—and observation should leave permanent evidence</strong>.
+          </p>
+          <p>
+            The framework provides guidance for implementing append-only event chains, sealed vault storage, controlled "break-glass" access, and cryptographic agility. It's designed for systems where you need to prove what happened without enabling surveillance.
+          </p>
+          <p>
+            SCQCS is <strong>not a product</strong>—it's a philosophy and pattern library. Implementations may vary in how they apply these principles to their specific domains.
+          </p>
+        </div>
+        <div class="what-visual reveal reveal-delay-1">
+          <img src="android-chrome-512x512.png" alt="SCQCS Canary - The Witness">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Patterns Section - NOW 3 ITEMS -->
+  <section class="patterns-section">
+    <div class="section-inner">
+      <div style="text-align: center;">
+        <span class="section-label reveal">Core Patterns</span>
+        <h2 class="section-title reveal reveal-delay-1">Three pillars of accountable privacy</h2>
+        <p class="section-description reveal reveal-delay-2" style="margin: 0 auto;">
+          These patterns form the foundation of any SCQCS-compliant implementation.
+        </p>
+      </div>
+      
+      <div class="patterns-grid">
+        <div class="pattern-card reveal interactive" data-sound="hover">
+          <div class="pattern-icon">📜</div>
+          <h3 class="pattern-title">Append-only logging</h3>
+          <p class="pattern-text">Events chain forward cryptographically. Modifications become detectable. Deletions become evident. History becomes provable.</p>
+        </div>
+        <div class="pattern-card reveal reveal-delay-1 interactive" data-sound="hover">
+          <div class="pattern-icon">🔐</div>
+          <h3 class="pattern-title">Sealed storage</h3>
+          <p class="pattern-text">Data encrypted at rest with minimal metadata exposure. Designed for retention without sprawl, access without surveillance.</p>
+        </div>
+        <div class="pattern-card reveal reveal-delay-2 interactive" data-sound="hover">
+          <div class="pattern-icon">🚨</div>
+          <h3 class="pattern-title">Accountable access</h3>
+          <p class="pattern-text">Emergency access patterns that are scoped, logged, and attributable. Exceptions exist—but they leave permanent receipts.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Principles Section -->
+  <section class="principles-section" id="principles">
+    <div class="section-inner">
+      <span class="section-label reveal">Principles</span>
+      <h2 class="section-title reveal reveal-delay-1">Designed to age well</h2>
+      <p class="section-description reveal reveal-delay-2">
+        These aren't features to be added—they're constraints that shape every decision.
+      </p>
+      
+      <div class="principles-grid">
+        <div class="principle-card reveal interactive" data-sound="hover">
+          <span class="principle-number">01</span>
+          <h3 class="principle-title">Witness, not watcher</h3>
+          <p class="principle-text">Support evidence without enabling surveillance. Default to data minimization. Resist scope creep and retroactive expansion.</p>
+          <div class="principle-tags">
+            <span class="principle-tag">data-minimization</span>
+            <span class="principle-tag">purpose-limitation</span>
+          </div>
+        </div>
+        
+        <div class="principle-card reveal reveal-delay-1 interactive" data-sound="hover">
+          <span class="principle-number">02</span>
+          <h3 class="principle-title">Audit over trust</h3>
+          <p class="principle-text">Prefer verifiable integrity over promises. Cryptographic proofs are more durable than policies, contracts, or good intentions.</p>
+          <div class="principle-tags">
+            <span class="principle-tag">tamper-evident</span>
+            <span class="principle-tag">verifiable</span>
+          </div>
+        </div>
+        
+        <div class="principle-card reveal reveal-delay-2 interactive" data-sound="hover">
+          <span class="principle-number">03</span>
+          <h3 class="principle-title">Exceptions leave scars</h3>
+          <p class="principle-text">Break-glass access may be necessary—but it should be hard to trigger casually and impossible to trigger silently.</p>
+          <div class="principle-tags">
+            <span class="principle-tag">least-privilege</span>
+            <span class="principle-tag">attribution</span>
+          </div>
+        </div>
+        
+        <div class="principle-card reveal reveal-delay-3 interactive" data-sound="hover">
+          <span class="principle-number">04</span>
+          <h3 class="principle-title">Plan for rotation</h3>
+          <p class="principle-text">Algorithms weaken. Keys get compromised. Design for migration from day one. Crypto agility isn't optional.</p>
+          <div class="principle-tags">
+            <span class="principle-tag">crypto-agility</span>
+            <span class="principle-tag">forward-secrecy</span>
+          </div>
+        </div>
+        
+        <div class="principle-card reveal reveal-delay-4 interactive" data-sound="hover">
+          <span class="principle-number">05</span>
+          <h3 class="principle-title">Local-first when possible</h3>
+          <p class="principle-text">External dependencies are attack surface. Prefer architectures that survive without vendor clouds and require explicit egress.</p>
+          <div class="principle-tags">
+            <span class="principle-tag">local-first</span>
+            <span class="principle-tag">explicit-egress</span>
+          </div>
+        </div>
+        
+        <div class="principle-card reveal interactive" data-sound="hover">
+          <span class="principle-number">06</span>
+          <h3 class="principle-title">Assume adversarial insiders</h3>
+          <p class="principle-text">The threat model includes administrators, developers, and operators. Make misuse architecturally difficult, not just policy-prohibited.</p>
+          <div class="principle-tags">
+            <span class="principle-tag">abuse-resistance</span>
+            <span class="principle-tag">defense-in-depth</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture Section -->
+  <section class="architecture-section" id="architecture">
+    <div class="section-inner">
+      <span class="section-label reveal">Reference Architecture</span>
+      <h2 class="section-title reveal reveal-delay-1">Contract-first patterns</h2>
+      <p class="section-description reveal reveal-delay-2">
+        SCQCS defines interfaces and behaviors, not implementations. Here's the mental model.
+      </p>
+      
+      <div class="arch-grid">
+        <div class="arch-visual reveal">
+          <div class="arch-header">
+            <h3 class="arch-header-title">Evidence envelope model</h3>
+            <p class="arch-header-text">Each record is an envelope containing minimal metadata, content digests, and policy tags. Envelopes chain forward—making modifications detectable and deletions evident.</p>
+          </div>
+          <div class="arch-code">
+            <div><span class="dim">record:</span> <span class="warn">ENVELOPE</span> <span class="dim">type=</span><span class="val">event</span> <span class="dim">scope=</span><span class="val">local</span></div>
+            <div><span class="dim">vault:</span>  <span class="key">ciphertext</span>=… <span class="dim">kdf=</span>… <span class="dim">policy=</span><span class="val">minimize</span></div>
+            <div><span class="dim">chain:</span> <span class="key">prev_hash</span>=… <span class="dim">hash=</span><span class="ok">VALID</span> <span class="dim">sig=</span><span class="ok">VALID</span></div>
+            <div><span class="dim">access:</span> <span class="key">break_glass</span>=<span class="bad">false</span> <span class="dim">export=</span><span class="bad">none</span></div>
+          </div>
+        </div>
+        
+        <div class="arch-sidebar">
+          <div class="arch-card reveal reveal-delay-1">
+            <h4 class="arch-card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              Design assumptions
+            </h4>
+            <p class="arch-card-text">SCQCS patterns assume adversarial conditions by default.</p>
+            <ul class="arch-list">
+              <li><span class="check">✓</span> Hostile network paths</li>
+              <li><span class="check">✓</span> Compromised endpoints</li>
+              <li><span class="check">✓</span> Insider threats</li>
+              <li><span class="check">✓</span> Algorithm deprecation</li>
+            </ul>
+          </div>
+          
+          <div class="arch-card reveal reveal-delay-2">
+            <h4 class="arch-card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 8v4M12 16h.01"/>
+              </svg>
+              Important limitations
+            </h4>
+            <ul class="arch-list">
+              <li><span class="cross">✗</span> Not a compliance certification</li>
+              <li><span class="cross">✗</span> Not legal advice</li>
+              <li><span class="cross">✗</span> Not a security guarantee</li>
+              <li><span class="cross">✗</span> Implementation-dependent</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Break-glass Section -->
+  <section class="breakglass-section" id="breakglass">
+    <div class="section-inner">
+      <span class="section-label reveal">Access Patterns</span>
+      <h2 class="section-title reveal reveal-delay-1">Break-glass with receipts</h2>
+      <p class="section-description reveal reveal-delay-2">
+        Emergency access is sometimes necessary. SCQCS defines patterns that make it deliberate, scoped, and permanently recorded.
+      </p>
+      
+      <div class="breakglass-visual reveal">
+        <div class="breakglass-header">
+          <div class="breakglass-icon">🔓</div>
+          <h3 class="breakglass-title">Accountable exception handling</h3>
+          <p class="breakglass-subtitle">Three properties every break-glass implementation should enforce</p>
+        </div>
+        
+        <div class="breakglass-steps">
+          <div class="breakglass-step interactive" data-sound="hover">
+            <div class="step-number">01</div>
+            <h4 class="step-title">Scoped by default</h4>
+            <p class="step-text">Access should be constrained to minimum necessary scope—time range, record types, and purpose.</p>
+          </div>
+          <div class="breakglass-step interactive" data-sound="hover">
+            <div class="step-number">02</div>
+            <h4 class="step-title">Multi-party when appropriate</h4>
+            <p class="step-text">Consider requiring multiple approvals or split keys. Single-actor access is a design choice, not a default.</p>
+          </div>
+          <div class="breakglass-step interactive" data-sound="hover">
+            <div class="step-number">03</div>
+            <h4 class="step-title">Permanent attribution</h4>
+            <p class="step-text">Every access creates an immutable receipt: who, when, justification, scope, and outcomes.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ecosystem Section -->
+  <section class="ecosystem-section" id="ecosystem">
+    <div class="section-inner">
+      <span class="section-label reveal">Ecosystem</span>
+      <h2 class="section-title reveal reveal-delay-1">Implementations & resources</h2>
+      <p class="section-description reveal reveal-delay-2">
+        SCQCS principles are being applied in various contexts. Here are some related projects.
+      </p>
+      
+      <div class="ecosystem-grid">
+        <div class="ecosystem-card reveal interactive" data-sound="hover">
+          <div class="ecosystem-icon">👁️</div>
+          <h3>SecuraCV</h3>
+          <p>A privacy-preserving computer vision framework that outputs semantic events instead of storing video. Uses SCQCS patterns for its witness kernel and vault architecture.</p>
+          <a href="https://securacv.netlify.app" class="ecosystem-link" target="_blank" data-sound="click">
+            Learn more
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M7 17L17 7M7 7h10v10"/>
+            </svg>
+          </a>
+        </div>
+        
+        <div class="ecosystem-card reveal reveal-delay-1 interactive" data-sound="hover">
+          <div class="ecosystem-icon">🔬</div>
+          <h3>ERRERLabs</h3>
+          <p>The research and development home for SCQCS and related privacy-preserving technologies. Exploring the intersection of security, privacy, and practical usability.</p>
+          <a href="https://errerlabs.com" class="ecosystem-link" target="_blank" data-sound="click">
+            Visit ERRERLabs
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M7 17L17 7M7 7h10v10"/>
+            </svg>
+          </a>
+        </div>
+        
+        <div class="ecosystem-card reveal reveal-delay-2 interactive" id="contact" data-sound="hover">
+          <div class="ecosystem-icon">💬</div>
+          <h3>Get involved</h3>
+          <p>Interested in applying SCQCS patterns to your work? Building something that needs accountable privacy? We'd like to hear about it.</p>
+          <a href="/cdn-cgi/l/email-protection#b8d0ddd4d4d7f8ddcacaddcad4d9dacb96dbd7d5" class="ecosystem-link" data-sound="click">
+            Get in touch
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M7 17L17 7M7 7h10v10"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Legal Section - STACKED DRAWERS -->
+  <section class="legal-section" id="legal">
+    <div class="section-inner">
+      <span class="section-label reveal">Transparency</span>
+      <h2 class="section-title reveal reveal-delay-1">Legal & disclaimers</h2>
+      
+      <div class="legal-notice reveal reveal-delay-2">
+        <p><strong>Important:</strong> SCQCS is a set of design patterns and principles—not a product, service, or certification. Any claims about security, privacy, or compliance depend entirely on how these patterns are implemented and operated. This documentation describes <em>design intent</em>, not guarantees.</p>
+      </div>
+      
+      <div class="legal-stack">
+        <details class="legal-drawer reveal" data-sound="drawer">
+          <summary>Privacy notice</summary>
+          <div class="legal-drawer-content">
+            <h4>What this site collects</h4>
+            <p>This website is a static document. It does not collect personal data, use analytics, set cookies, or phone home. If you're viewing this on a hosted server, that server may log standard HTTP request data (IP address, user agent, timestamps). We don't control what hosting providers log.</p>
+            
+            <h4>What SCQCS implementations collect</h4>
+            <p>Varies entirely by implementation. SCQCS defines <em>patterns</em> for data minimization—whether any specific system follows them is a matter for that system's documentation and audit.</p>
+            
+            <h4>Third-party resources</h4>
+            <p>This page loads Google Fonts. No other third-party resources are requested. If this page is embedded elsewhere, that host's practices apply.</p>
+          </div>
+        </details>
+        
+        <details class="legal-drawer reveal reveal-delay-1" data-sound="drawer">
+          <summary>Terms & disclaimers</summary>
+          <div class="legal-drawer-content">
+            <h4>No warranties</h4>
+            <p>All materials are provided "as is" without warranties of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, security, or non-infringement.</p>
+            
+            <h4>Not legal or security advice</h4>
+            <p>Nothing here constitutes legal advice, security certification, or compliance guidance. Consult qualified professionals for your jurisdiction and use case.</p>
+            
+            <h4>Implementation responsibility</h4>
+            <p>Security depends on correct implementation, operational practices, threat modeling, and ongoing maintenance. Patterns described here may be implemented incorrectly, incompletely, or inappropriately.</p>
+            
+            <h4>Acceptable use</h4>
+            <p>Do not use SCQCS patterns to build covert surveillance systems, stalk or harass individuals, or claim certifications or audits without published evidence.</p>
+          </div>
+        </details>
+        
+        <details class="legal-drawer reveal reveal-delay-2" data-sound="drawer">
+          <summary>Cryptography statement</summary>
+          <div class="legal-drawer-content">
+            <h4>Crypto agility</h4>
+            <p>SCQCS patterns are designed for cryptographic agility—the ability to upgrade, replace, or migrate cryptographic primitives over time. This is a design principle, not a feature guarantee.</p>
+            
+            <h4>Post-quantum considerations</h4>
+            <p>The framework anticipates migration to post-quantum cryptographic standards as they mature. This does not imply current quantum-resistance or any specific timeline for adoption.</p>
+            
+            <h4>No certification claims</h4>
+            <p>SCQCS does not claim compliance with FIPS, Common Criteria, or any other certification standard. Implementations seeking certification must undergo independent evaluation.</p>
+            
+            <h4>Algorithm selection</h4>
+            <p>Choice of specific cryptographic algorithms is an implementation decision. SCQCS patterns work with various primitives—selection should be based on current best practices, threat models, and compliance requirements.</p>
+          </div>
+        </details>
+        
+        <details class="legal-drawer reveal reveal-delay-3" data-sound="drawer">
+          <summary>Intellectual property</summary>
+          <div class="legal-drawer-content">
+            <h4>Copyright</h4>
+            <p>© <span id="year"></span> ERRERLabs. Documentation and website content are provided for informational purposes.</p>
+            
+            <h4>Trademarks</h4>
+            <p>SCQCS, SecuraCV, and ERRERLabs are identifiers used by their respective projects. Other trademarks belong to their respective owners.</p>
+            
+            <h4>Open source</h4>
+            <p>Where code is released as open source, it is governed by the license in its repository. This documentation does not modify those terms.</p>
+            
+            <h4>Pattern usage</h4>
+            <p>The architectural patterns described here may be implemented freely. Attribution is appreciated but not required.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <div class="footer-logo-icon">
+            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="SCQCS">
+              <rect x="6" y="6" width="28" height="28" stroke="white" stroke-width="2.5" fill="none"/>
+            </svg>
+          </div>
+          <span class="footer-logo-text">SCQCS</span>
+        </div>
+        <p class="footer-description">
+          Schrödinger's Cat Quantum Cryptography & Security. A privacy-first framework for accountable systems.
+        </p>
+      </div>
+      
+      <div class="footer-column">
+        <h4>Framework</h4>
+        <ul class="footer-links">
+          <li><a href="#what" data-sound="click">About</a></li>
+          <li><a href="#principles" data-sound="click">Principles</a></li>
+          <li><a href="#architecture" data-sound="click">Architecture</a></li>
+          <li><a href="#breakglass" data-sound="click">Break-glass</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-column">
+        <h4>Ecosystem</h4>
+        <ul class="footer-links">
+          <li><a href="https://securacv.netlify.app" target="_blank" data-sound="click">SecuraCV</a></li>
+          <li><a href="https://errerlabs.com" target="_blank" data-sound="click">ERRERLabs</a></li>
+          <li><a href="#contact" data-sound="click">Contact</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-column">
+        <h4>Legal</h4>
+        <ul class="footer-links">
+          <li><a href="#legal" data-sound="click">Privacy notice</a></li>
+          <li><a href="#legal" data-sound="click">Terms</a></li>
+          <li><a href="#legal" data-sound="click">Disclaimers</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <p class="footer-copyright">© <span id="footer-year"></span> ERRERLabs. Patterns provided as-is.</p>
+      <div class="footer-legal-links">
+        <a href="#legal" data-sound="click">Privacy</a>
+        <a href="#legal" data-sound="click">Terms</a>
+        <a href="#legal" data-sound="click">Disclaimers</a>
+      </div>
+    </div>
+  </footer>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // ========================================
+    // Sound System - Subtle UI feedback
+    // ========================================
+    const SoundSystem = {
+      ctx: null,
+      enabled: true,
+      volume: 0.025,
+      
+      init() {
+        document.addEventListener('click', () => {
+          if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+          }
+        }, { once: true });
+      },
+      
+      play(type) {
+        if (!this.ctx || !this.enabled) return;
+        
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        const now = this.ctx.currentTime;
+        
+        switch(type) {
+          case 'click':
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.exponentialRampToValueAtTime(600, now + 0.05);
+            gain.gain.setValueAtTime(this.volume, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+            osc.start(now);
+            osc.stop(now + 0.08);
+            break;
+            
+          case 'hover':
+            osc.frequency.setValueAtTime(1200, now);
+            osc.frequency.exponentialRampToValueAtTime(1000, now + 0.03);
+            gain.gain.setValueAtTime(this.volume * 0.4, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            osc.start(now);
+            osc.stop(now + 0.05);
+            break;
+            
+          case 'drawer':
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+            gain.gain.setValueAtTime(this.volume, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+            osc.start(now);
+            osc.stop(now + 0.15);
+            break;
+        }
+      }
+    };
+    
+    SoundSystem.init();
+
+    // ========================================
+    // Attach sound events
+    // ========================================
+    document.querySelectorAll('[data-sound="click"]').forEach(el => {
+      el.addEventListener('click', () => SoundSystem.play('click'));
+    });
+    
+    document.querySelectorAll('[data-sound="hover"]').forEach(el => {
+      el.addEventListener('mouseenter', () => SoundSystem.play('hover'));
+    });
+    
+    document.querySelectorAll('[data-sound="drawer"]').forEach(el => {
+      el.addEventListener('toggle', () => SoundSystem.play('drawer'));
+    });
+
+    // ========================================
+    // Set year
+    // ========================================
+    const year = new Date().getFullYear();
+    document.getElementById('year').textContent = year;
+    document.getElementById('footer-year').textContent = year;
+
+    // ========================================
+    // Navigation scroll effect
+    // ========================================
+    const nav = document.getElementById('nav');
+    
+    window.addEventListener('scroll', () => {
+      if (window.pageYOffset > 50) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    }, { passive: true });
+
+    // ========================================
+    // Scroll reveal animation
+    // ========================================
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px 0px -100px 0px',
+      threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.reveal').forEach(el => {
+      observer.observe(el);
+    });
+
+    // ========================================
+    // Smooth scroll for anchor links
+    // ========================================
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+
+    // ========================================
+    // Scroll indicator click
+    // ========================================
+    document.querySelector('.scroll-indicator').addEventListener('click', () => {
+      document.querySelector('#what').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    // ========================================
+    // Reduced motion check
+    // =================================
