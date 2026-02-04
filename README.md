@@ -58,7 +58,7 @@ This repository is designed to be a **reference implementation** for secure, pri
 5. **Update security/SEO files** — replace domain references
 6. **Deploy to Netlify** — `_headers` and `_redirects` work automatically
 
-**New to Netlify?** See [`GETTING_STARTED.md`](GETTING_STARTED.md) for a detailed walkthrough with screenshots-free step-by-step instructions.
+**New to Netlify?** See [`GETTING_STARTED.md`](GETTING_STARTED.md) for a complete deployment walkthrough.
 
 ### Security Headers You Get
 
