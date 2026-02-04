@@ -6,12 +6,12 @@
 SCQCS (Schrodinger's Cat Quantum Cryptography & Security) is a privacy-first security framework developed by ERRERLabs. It provides architectural patterns and principles for building systems that require both privacy and accountability.
 
 ## Core Concept
-Named after Schrodinger's famous thought experiment, SCQCS embodies the principle that data should remain sealed until deliberately observed, and observation should leave permanent evidence.
+Named after Schrodinger's famous thought experiment (as a metaphor, not quantum computing), SCQCS embodies the principle that data should remain sealed until deliberately observed, and observation should leave auditable evidence.
 
 ## Three Core Patterns
 1. **Append-only Logging**: Events chain forward cryptographically. Modifications become detectable. Deletions become evident. History becomes provable.
 2. **Sealed Storage**: Data encrypted at rest with minimal metadata exposure. Designed for retention without sprawl, access without surveillance.
-3. **Accountable Access**: Emergency break-glass access patterns that are scoped, logged, and attributable. Exceptions exist but leave permanent receipts.
+3. **Accountable Access**: Emergency break-glass access patterns that are scoped, logged, and attributable. Exceptions exist but leave tamper-evident receipts.
 
 ## Six Principles
 1. Witness, not watcher - Support evidence without enabling surveillance
@@ -22,12 +22,12 @@ Named after Schrodinger's famous thought experiment, SCQCS embodies the principl
 6. Assume adversarial insiders - Make misuse architecturally difficult
 
 ## Key Terms
-- SCQCS: Schrodinger's Cat Quantum Cryptography & Security
-- ERRERLabs: The research organization developing SCQCS
-- SecuraCV: A privacy-preserving computer vision framework using SCQCS patterns
+- SCQCS: Schrodinger's Cat Quantum Cryptography & Security (the name references the thought experiment as a metaphor, not quantum computing)
+- ERRERLabs: The project home for SCQCS and related work
+- SecuraCV: A privacy-preserving computer vision framework applying SCQCS patterns
 - Break-glass: Emergency access pattern with full attribution
 - Sealed storage: Encrypted-at-rest data with minimal metadata
-- Append-only: Immutable, cryptographically-chained event logs
+- Append-only: Tamper-evident, cryptographically-chained event logs
 
 ## Related Projects
 - SecuraCV (https://securacv.netlify.app) - Privacy-preserving computer vision
@@ -37,7 +37,6 @@ Named after Schrodinger's famous thought experiment, SCQCS embodies the principl
 - Framework type: Architectural patterns and security principles
 - License: Patterns may be implemented freely
 - Implementation: Not a product - implementations vary by domain
-- Status: Active development
 
 ## Important Disclaimers
 - SCQCS is not a product, service, or certification

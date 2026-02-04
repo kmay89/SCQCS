@@ -43,12 +43,8 @@
       "name": "ERRERLabs",
       "url": "https://errerlabs.com"
     },
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD",
-      "availability": "https://schema.org/InStock"
-    },
+    "isAccessibleForFree": true,
+    "license": "https://scqcs.com/#legal",
     "featureList": [
       "Append-only logging with cryptographic chaining",
       "Sealed storage with minimal metadata exposure",
@@ -1484,7 +1480,7 @@
           <h2 class="section-title">What is SCQCS?</h2>
           <h3>Schrödinger's Cat Quantum Cryptography & Security</h3>
           <p>
-            SCQCS is a set of architectural patterns and security principles for building systems that need both privacy and accountability. Named after the famous thought experiment, it embodies a core insight: <strong>data should remain sealed until deliberately observed—and observation should leave permanent evidence</strong>.
+            SCQCS is a set of architectural patterns and security principles for building systems that need both privacy and accountability. Named after the famous thought experiment, it embodies a core insight: <strong>data should remain sealed until deliberately observed—and observation should leave auditable evidence</strong>.
           </p>
           <p>
             The framework provides guidance for implementing append-only event chains, sealed vault storage, controlled "break-glass" access, and cryptographic agility. It's designed for systems where you need to prove what happened without enabling surveillance.
@@ -1500,7 +1496,7 @@
     </div>
   </section>
 
-  <!-- Core Patterns Section - NOW 3 ITEMS -->
+  <!-- Core Patterns Section -->
   <section class="patterns-section">
     <div class="section-inner">
       <div style="text-align: center;">
@@ -1515,7 +1511,7 @@
         <div class="pattern-card reveal interactive" data-sound="hover">
           <div class="pattern-icon">📜</div>
           <h3 class="pattern-title">Append-only logging</h3>
-          <p class="pattern-text">Events chain forward cryptographically. Modifications become detectable. Deletions become evident. History becomes provable.</p>
+          <p class="pattern-text">Events chain forward cryptographically. Modifications become detectable. Deletions become evident. History becomes verifiable.</p>
         </div>
         <div class="pattern-card reveal reveal-delay-1 interactive" data-sound="hover">
           <div class="pattern-icon">🔐</div>
@@ -1525,7 +1521,7 @@
         <div class="pattern-card reveal reveal-delay-2 interactive" data-sound="hover">
           <div class="pattern-icon">🚨</div>
           <h3 class="pattern-title">Accountable access</h3>
-          <p class="pattern-text">Emergency access patterns that are scoped, logged, and attributable. Exceptions exist—but they leave permanent receipts.</p>
+          <p class="pattern-text">Emergency access patterns that are scoped, logged, and attributable. Exceptions exist—but they leave durable, tamper-evident receipts.</p>
         </div>
       </div>
     </div>
@@ -1564,7 +1560,7 @@
         <div class="principle-card reveal reveal-delay-2 interactive" data-sound="hover">
           <span class="principle-number">03</span>
           <h3 class="principle-title">Exceptions leave scars</h3>
-          <p class="principle-text">Break-glass access may be necessary—but it should be hard to trigger casually and impossible to trigger silently.</p>
+          <p class="principle-text">Break-glass access may be necessary—but it should be hard to trigger casually and designed to prevent silent invocation.</p>
           <div class="principle-tags">
             <span class="principle-tag">least-privilege</span>
             <span class="principle-tag">attribution</span>
@@ -1577,7 +1573,7 @@
           <p class="principle-text">Algorithms weaken. Keys get compromised. Design for migration from day one. Crypto agility isn't optional.</p>
           <div class="principle-tags">
             <span class="principle-tag">crypto-agility</span>
-            <span class="principle-tag">forward-secrecy</span>
+            <span class="principle-tag">key-rotation</span>
           </div>
         </div>
         
@@ -1693,8 +1689,8 @@
           </div>
           <div class="breakglass-step interactive" data-sound="hover">
             <div class="step-number">03</div>
-            <h4 class="step-title">Permanent attribution</h4>
-            <p class="step-text">Every access creates an immutable receipt: who, when, justification, scope, and outcomes.</p>
+            <h4 class="step-title">Durable attribution</h4>
+            <p class="step-text">Every access creates a tamper-evident receipt: who, when, justification, scope, and outcomes.</p>
           </div>
         </div>
       </div>
