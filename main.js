@@ -400,12 +400,15 @@ const MobileNav = {
     this.hamburger.addEventListener('touchend', handleToggle, { passive: false });
 
     // Close menu when clicking/touching a link
+    // Use shared idempotent handler to prevent double-firing on touch devices
     this.mobileNav.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => this.close());
-      link.addEventListener('touchend', (e) => {
-        // Let the navigation happen naturally
-        this.close();
-      }, { passive: true });
+      const handleClose = () => {
+        if (this.isOpen) {
+          this.close();
+        }
+      };
+      link.addEventListener('click', handleClose);
+      link.addEventListener('touchend', handleClose, { passive: true });
     });
 
     // Close menu on escape key
@@ -416,16 +419,14 @@ const MobileNav = {
     });
 
     // Close menu when clicking/touching outside
-    this.mobileNav.addEventListener('click', (e) => {
-      if (e.target === this.mobileNav) {
+    // Use shared idempotent handler to prevent double-firing on touch devices
+    const handleOutsideClose = (e) => {
+      if (e.target === this.mobileNav && this.isOpen) {
         this.close();
       }
-    });
-    this.mobileNav.addEventListener('touchend', (e) => {
-      if (e.target === this.mobileNav) {
-        this.close();
-      }
-    }, { passive: true });
+    };
+    this.mobileNav.addEventListener('click', handleOutsideClose);
+    this.mobileNav.addEventListener('touchend', handleOutsideClose, { passive: true });
   },
 
   toggle() {
