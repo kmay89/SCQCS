@@ -482,6 +482,129 @@
       box-shadow: 0 0 30px rgba(255,255,255,0.2);
     }
 
+    /* Mobile hamburger menu button */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 44px;
+      height: 44px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      z-index: 102;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .hamburger-line {
+      width: 22px;
+      height: 2px;
+      background: var(--text);
+      border-radius: 2px;
+      transition: all 0.3s var(--ease-out-expo);
+      transform-origin: center;
+    }
+
+    .hamburger-line:nth-child(1) {
+      margin-bottom: 5px;
+    }
+
+    .hamburger-line:nth-child(2) {
+      margin-bottom: 5px;
+    }
+
+    /* Hamburger animation to X */
+    .hamburger.active .hamburger-line:nth-child(1) {
+      transform: translateY(7px) rotate(45deg);
+    }
+
+    .hamburger.active .hamburger-line:nth-child(2) {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+
+    .hamburger.active .hamburger-line:nth-child(3) {
+      transform: translateY(-7px) rotate(-45deg);
+    }
+
+    /* Mobile navigation overlay */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.98);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 99;
+      padding: calc(80px + env(safe-area-inset-top, 0px)) 24px 24px;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .mobile-nav.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .mobile-nav-links {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .mobile-nav-link {
+      display: block;
+      width: 100%;
+      padding: 16px 24px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: 500;
+      text-align: center;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      transition: all 0.2s ease;
+    }
+
+    .mobile-nav-link:hover,
+    .mobile-nav-link:active {
+      background: rgba(255, 255, 255, 0.1);
+      transform: scale(1.02);
+    }
+
+    .mobile-nav-cta {
+      display: block;
+      width: 100%;
+      padding: 18px 24px;
+      margin-top: 16px;
+      background: var(--text);
+      color: var(--black);
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+      border-radius: 100px;
+      transition: all 0.3s var(--ease-out-expo);
+    }
+
+    .mobile-nav-cta:hover,
+    .mobile-nav-cta:active {
+      transform: scale(1.02);
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+    }
+
     /* Hero Section */
     .hero {
       min-height: 100vh;
@@ -2254,8 +2377,17 @@
         display: none;
       }
 
+      /* Show hamburger menu on mobile */
+      .hamburger {
+        display: flex;
+      }
+
+      .mobile-nav {
+        display: flex;
+      }
+
       .logo-group {
-        gap: 10px;
+        gap: 8px;
       }
 
       .logo-icon {
@@ -2267,20 +2399,21 @@
         font-size: 16px;
       }
 
-      /* Improved mobile badge visibility */
+      /* Mobile badges - redesigned for clarity */
       .health-indicator {
-        padding: 6px 10px;
-        font-size: 11px;
+        padding: 6px 12px;
+        font-size: 10px;
         gap: 6px;
+        border: 1px solid rgba(0, 255, 136, 0.3);
       }
 
       .health-indicator span {
-        display: none;
+        display: inline;
       }
 
       .health-dot {
-        width: 10px;
-        height: 10px;
+        width: 8px;
+        height: 8px;
       }
 
       .health-dot::before {
@@ -2288,18 +2421,19 @@
       }
 
       .no-cookies-tag {
-        padding: 6px 10px;
-        font-size: 11px;
-        gap: 5px;
+        padding: 6px 12px;
+        font-size: 10px;
+        gap: 6px;
+        border: 1px solid rgba(0, 255, 136, 0.2);
       }
 
       .no-cookies-tag span {
-        display: none;
+        display: inline;
       }
 
       .no-cookies-tag svg {
-        width: 14px;
-        height: 14px;
+        width: 12px;
+        height: 12px;
       }
 
       section {
@@ -2455,7 +2589,8 @@
       }
 
       .logo-group {
-        gap: 6px;
+        gap: 4px;
+        flex-wrap: wrap;
       }
 
       .logo-icon {
@@ -2468,20 +2603,27 @@
         font-size: 14px;
       }
 
-      /* Keep badges visible on small screens */
-      .health-indicator,
+      /* Compact badges for very small screens */
+      .health-indicator {
+        padding: 4px 8px;
+        font-size: 9px;
+        gap: 4px;
+      }
+
       .no-cookies-tag {
-        padding: 5px 8px;
+        padding: 4px 8px;
+        font-size: 9px;
+        gap: 4px;
       }
 
       .health-dot {
-        width: 8px;
-        height: 8px;
+        width: 6px;
+        height: 6px;
       }
 
       .no-cookies-tag svg {
-        width: 12px;
-        height: 12px;
+        width: 10px;
+        height: 10px;
       }
 
       section {
@@ -2630,9 +2772,27 @@
         <a href="#ecosystem" class="nav-link" data-sound="click">Ecosystem</a>
         <a href="#template" class="nav-cta interactive" data-sound="click">Use Template</a>
       </div>
+
+      <!-- Mobile hamburger button -->
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
     </div>
     <div class="scroll-progress" id="scroll-progress"></div>
   </nav>
+
+  <!-- Mobile navigation overlay -->
+  <div class="mobile-nav" id="mobile-nav">
+    <div class="mobile-nav-links">
+      <a href="#what" class="mobile-nav-link" data-sound="click">About</a>
+      <a href="#principles" class="mobile-nav-link" data-sound="click">Principles</a>
+      <a href="#architecture" class="mobile-nav-link" data-sound="click">Architecture</a>
+      <a href="#ecosystem" class="mobile-nav-link" data-sound="click">Ecosystem</a>
+      <a href="#template" class="mobile-nav-cta" data-sound="click">Use Template</a>
+    </div>
+  </div>
 
   <!-- Hero Section -->
   <section class="hero">

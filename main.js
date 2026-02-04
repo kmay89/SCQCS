@@ -374,6 +374,73 @@ if (scrollIndicator) {
 }
 
 // ========================================
+// Mobile Navigation Toggle
+// ========================================
+const MobileNav = {
+  hamburger: null,
+  mobileNav: null,
+  isOpen: false,
+
+  init() {
+    this.hamburger = document.getElementById('hamburger');
+    this.mobileNav = document.getElementById('mobile-nav');
+
+    if (!this.hamburger || !this.mobileNav) return;
+
+    // Toggle menu on hamburger click
+    this.hamburger.addEventListener('click', () => this.toggle());
+
+    // Close menu when clicking a link
+    this.mobileNav.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => this.close());
+    });
+
+    // Close menu on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.isOpen) {
+        this.close();
+      }
+    });
+
+    // Close menu when clicking outside
+    this.mobileNav.addEventListener('click', (e) => {
+      if (e.target === this.mobileNav) {
+        this.close();
+      }
+    });
+  },
+
+  toggle() {
+    if (this.isOpen) {
+      this.close();
+    } else {
+      this.open();
+    }
+  },
+
+  open() {
+    this.isOpen = true;
+    this.hamburger.classList.add('active');
+    this.hamburger.setAttribute('aria-expanded', 'true');
+    this.mobileNav.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    SoundSystem.play('drawer');
+  },
+
+  close() {
+    this.isOpen = false;
+    this.hamburger.classList.remove('active');
+    this.hamburger.setAttribute('aria-expanded', 'false');
+    this.mobileNav.classList.remove('active');
+    document.body.style.overflow = '';
+    SoundSystem.play('click');
+  }
+};
+
+// Initialize mobile navigation
+MobileNav.init();
+
+// ========================================
 // Copy prompt to clipboard - optimized
 // ========================================
 
