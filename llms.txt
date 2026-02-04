@@ -53,6 +53,9 @@ This repository is designed to be used as a **starter template** for secure, pri
 ### Repository URL
 https://github.com/kmay89/SCQCS
 
+### Website Template Section
+Visit https://scqcs.com/#template for an interactive guide with step-by-step instructions.
+
 ### What This Template Provides
 1. **Security headers** (`_headers`) - CSP, HSTS, COOP, COEP, Permissions-Policy
 2. **SEO optimization** - Meta tags, Open Graph, Twitter Cards, JSON-LD

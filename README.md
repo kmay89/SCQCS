@@ -35,6 +35,8 @@ Visit [scqcs.com](https://scqcs.com) for the full framework documentation.
 
 This repository is designed to be a **reference implementation** for secure, privacy-respecting static sites. Feel free to use it as a starting point for your own projects.
 
+**See the interactive guide:** [scqcs.com/#template](https://scqcs.com/#template)
+
 ### What's Included
 
 | File | Purpose |

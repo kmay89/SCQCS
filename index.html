@@ -239,6 +239,36 @@
       letter-spacing: -0.3px;
     }
 
+    /* Scintillation effect for SCQCS text */
+    .scintillate {
+      display: inline-flex;
+    }
+
+    .scintillate span {
+      display: inline-block;
+      animation: scintillate 4s ease-in-out infinite;
+      animation-delay: calc(var(--i) * 0.4s);
+    }
+
+    @keyframes scintillate {
+      0%, 85%, 100% {
+        opacity: 1;
+        text-shadow: none;
+      }
+      90% {
+        opacity: 0.85;
+        text-shadow:
+          0 0 4px rgba(255,255,255,0.4),
+          0 0 8px rgba(245,197,24,0.2);
+      }
+      95% {
+        opacity: 1;
+        text-shadow:
+          0 0 2px rgba(255,255,255,0.6),
+          0 0 12px rgba(245,197,24,0.3);
+      }
+    }
+
     /* Health indicator */
     .health-indicator {
       display: flex;
@@ -1070,6 +1100,190 @@
       height: 16px;
     }
 
+    /* Template section */
+    .template-section {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+
+    .template-hero {
+      background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface-3) 100%);
+      border: 1px solid var(--border);
+      border-radius: 32px;
+      padding: 48px;
+      margin-top: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .template-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, var(--accent-soft) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .template-header {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 32px;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .template-header-text h3 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .template-header-text p {
+      color: var(--text-secondary);
+      font-size: 16px;
+      line-height: 1.6;
+      max-width: 500px;
+    }
+
+    .template-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 28px;
+      background: var(--text);
+      color: var(--black);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 14px;
+      transition: all 0.3s var(--ease-out-expo);
+      white-space: nowrap;
+    }
+
+    .template-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 40px rgba(255,255,255,0.15);
+    }
+
+    .template-cta svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .template-steps {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .template-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.3s var(--ease-out-expo);
+    }
+
+    .template-step:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+
+    .template-step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    .template-step h4 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .template-step p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .template-features {
+      margin-top: 40px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .template-feature {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .template-feature svg {
+      width: 14px;
+      height: 14px;
+      color: var(--success);
+    }
+
+    @media (max-width: 1024px) {
+      .template-steps {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .template-header {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .template-header-text p {
+        max-width: none;
+      }
+
+      .template-cta {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .template-steps {
+        grid-template-columns: 1fr;
+      }
+
+      .template-hero {
+        padding: 32px 24px;
+      }
+
+      .template-features {
+        justify-content: center;
+      }
+    }
+
     /* Legal section - STACKED DRAWERS */
     .legal-section {
       background: var(--surface);
@@ -1401,7 +1615,7 @@
             <rect x="6" y="6" width="28" height="28" stroke="white" stroke-width="2.5" fill="none"/>
           </svg>
         </div>
-        <span class="logo-text">SCQCS</span>
+        <span class="logo-text scintillate"><span style="--i:0">S</span><span style="--i:1">C</span><span style="--i:2">Q</span><span style="--i:3">C</span><span style="--i:4">S</span></span>
       </a>
       
       <div class="health-indicator" title="Framework documentation online">
@@ -1414,7 +1628,7 @@
         <a href="#principles" class="nav-link" data-sound="click">Principles</a>
         <a href="#architecture" class="nav-link" data-sound="click">Architecture</a>
         <a href="#ecosystem" class="nav-link" data-sound="click">Ecosystem</a>
-        <a href="#contact" class="nav-cta interactive" data-sound="click">Get Involved</a>
+        <a href="#template" class="nav-cta interactive" data-sound="click">Use Template</a>
       </div>
     </div>
   </nav>
@@ -1741,6 +1955,82 @@
     </div>
   </section>
 
+  <!-- Use as Template Section -->
+  <section class="template-section" id="template">
+    <div class="section-inner">
+      <span class="section-label reveal">Open Source</span>
+      <h2 class="section-title reveal reveal-delay-1">Use this as a template</h2>
+      <p class="section-description reveal reveal-delay-2">
+        This repository is designed to be forked and adapted. Get a secure, privacy-respecting static site in minutes.
+      </p>
+
+      <div class="template-hero reveal">
+        <div class="template-header">
+          <div class="template-header-text">
+            <h3>Production-ready security defaults</h3>
+            <p>Fork the GitHub repo, customize the content, deploy to Netlify. All security headers, SEO optimization, and privacy best practices are already configured.</p>
+          </div>
+          <a href="https://github.com/kmay89/SCQCS" class="template-cta interactive" target="_blank" rel="noopener noreferrer" data-sound="click">
+            View on GitHub
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M7 17L17 7M7 7h10v10"/>
+            </svg>
+          </a>
+        </div>
+
+        <div class="template-steps">
+          <div class="template-step interactive" data-sound="hover">
+            <div class="template-step-number">1</div>
+            <h4>Fork the repo</h4>
+            <p>Clone or fork from GitHub to get all files and configurations.</p>
+          </div>
+          <div class="template-step interactive" data-sound="hover">
+            <div class="template-step-number">2</div>
+            <h4>Customize content</h4>
+            <p>Replace scqcs.com with your domain throughout all files.</p>
+          </div>
+          <div class="template-step interactive" data-sound="hover">
+            <div class="template-step-number">3</div>
+            <h4>Update security.txt</h4>
+            <p>Add your security contact info and policy links.</p>
+          </div>
+          <div class="template-step interactive" data-sound="hover">
+            <div class="template-step-number">4</div>
+            <h4>Deploy to Netlify</h4>
+            <p>Connect to Netlify for free HTTPS, CDN, and automatic deploys.</p>
+          </div>
+        </div>
+
+        <div class="template-features">
+          <span class="template-feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            Security headers
+          </span>
+          <span class="template-feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            Content Security Policy
+          </span>
+          <span class="template-feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            SEO optimized
+          </span>
+          <span class="template-feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            AI/LLM discoverable
+          </span>
+          <span class="template-feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            No tracking
+          </span>
+          <span class="template-feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            MIT License
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Legal Section - STACKED DRAWERS -->
   <section class="legal-section" id="legal">
     <div class="section-inner">
@@ -1830,7 +2120,7 @@
               <rect x="6" y="6" width="28" height="28" stroke="white" stroke-width="2.5" fill="none"/>
             </svg>
           </div>
-          <span class="footer-logo-text">SCQCS</span>
+          <span class="footer-logo-text scintillate"><span style="--i:0">S</span><span style="--i:1">C</span><span style="--i:2">Q</span><span style="--i:3">C</span><span style="--i:4">S</span></span>
         </div>
         <p class="footer-description">
           Schrödinger's Cat Quantum Cryptography & Security. A privacy-first framework for accountable systems.
@@ -1852,7 +2142,8 @@
         <ul class="footer-links">
           <li><a href="https://securacv.netlify.app" target="_blank" rel="noopener noreferrer" data-sound="click">SecuraCV</a></li>
           <li><a href="https://errerlabs.com" target="_blank" rel="noopener noreferrer" data-sound="click">ERRERLabs</a></li>
-          <li><a href="#contact" data-sound="click">Contact</a></li>
+          <li><a href="#template" data-sound="click">Use Template</a></li>
+          <li><a href="https://github.com/kmay89/SCQCS" target="_blank" rel="noopener noreferrer" data-sound="click">GitHub</a></li>
         </ul>
       </div>
       
