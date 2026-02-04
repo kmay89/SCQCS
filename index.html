@@ -215,6 +215,7 @@
 
     html {
       scroll-behavior: smooth;
+      overflow-x: hidden;
     }
 
     body {
@@ -225,6 +226,7 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       overflow-x: hidden;
+      min-width: 320px;
     }
 
     ::selection {
@@ -489,19 +491,21 @@
       position: relative;
       z-index: 2;
       max-width: 900px;
+      width: 100%;
+      padding: 0 16px;
     }
 
     /* Hero video container - above text, contained */
     .hero-video-container {
-      width: 260px;
-      height: 260px;
+      width: min(260px, 70vw);
+      height: min(260px, 70vw);
       margin: 0 auto 48px;
-      border-radius: 32px;
+      border-radius: min(32px, 8vw);
       overflow: hidden;
       border: 1px solid var(--border);
       background: var(--surface);
       position: relative;
-      box-shadow: 
+      box-shadow:
         0 0 0 1px rgba(255,255,255,0.05),
         0 25px 60px rgba(0,0,0,0.6),
         0 0 120px var(--accent-soft);
@@ -880,7 +884,7 @@
 
     .principles-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
       gap: 24px;
       margin-top: 64px;
     }
@@ -1823,82 +1827,295 @@
       color: var(--text);
     }
 
-    /* Responsive */
+    /* ===== RESPONSIVE ===== */
+
+    /* Tablet - 1024px and below */
     @media (max-width: 1024px) {
       .arch-grid {
         grid-template-columns: 1fr;
       }
-      
+
       .what-grid {
         grid-template-columns: 1fr;
         gap: 48px;
       }
-      
+
       .what-visual {
         order: -1;
       }
-      
+
       .patterns-grid {
         grid-template-columns: 1fr;
         gap: 20px;
       }
-      
+
       .ecosystem-grid {
         grid-template-columns: 1fr;
       }
-      
+
       .footer-inner {
         grid-template-columns: 1fr 1fr;
       }
+
+      .breakglass-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
     }
 
+    /* Mobile - 768px and below */
     @media (max-width: 768px) {
       nav {
         padding: 12px 16px;
       }
-      
+
       .nav-links {
         display: none;
       }
-      
+
+      .logo-group {
+        gap: 10px;
+      }
+
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+      }
+
+      .logo-text {
+        font-size: 16px;
+      }
+
+      .health-indicator {
+        padding: 4px 8px;
+        font-size: 10px;
+        gap: 5px;
+      }
+
       .health-indicator span {
         display: none;
+      }
+
+      .health-dot {
+        width: 6px;
+        height: 6px;
+      }
+
+      .no-cookies-tag {
+        padding: 4px 8px;
+        font-size: 10px;
+        gap: 4px;
       }
 
       .no-cookies-tag span {
         display: none;
       }
 
+      .no-cookies-tag svg {
+        width: 10px;
+        height: 10px;
+      }
+
       section {
-        padding: 80px 20px;
+        padding: 60px 16px;
       }
-      
+
+      .section-inner {
+        width: 100%;
+      }
+
+      .section-title {
+        letter-spacing: -1px;
+      }
+
+      .section-description {
+        font-size: 16px;
+      }
+
       .hero {
-        padding: 100px 20px 60px;
+        padding: 90px 16px 50px;
+        min-height: auto;
       }
-      
+
       .hero-video-container {
-        width: 180px;
-        height: 180px;
-        margin-bottom: 32px;
+        width: 160px;
+        height: 160px;
+        margin-bottom: 24px;
       }
-      
+
+      .hero-badge {
+        padding: 6px 12px;
+        font-size: 11px;
+        margin-bottom: 16px;
+      }
+
+      .hero-title {
+        letter-spacing: -1px;
+        margin-bottom: 16px;
+      }
+
+      .hero-subtitle {
+        font-size: 15px;
+        margin-bottom: 28px;
+        padding: 0 8px;
+      }
+
+      .hero-buttons {
+        flex-direction: column;
+        width: 100%;
+        padding: 0 16px;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 14px 24px;
+        font-size: 14px;
+      }
+
+      .hero-cta-secondary {
+        font-size: 13px;
+        margin-top: 20px;
+      }
+
+      .scroll-indicator {
+        bottom: 24px;
+      }
+
+      .principles-grid {
+        gap: 16px;
+        margin-top: 40px;
+      }
+
+      .principle-card {
+        padding: 24px;
+        border-radius: 20px;
+      }
+
+      .principle-title {
+        font-size: 19px;
+      }
+
+      .principle-text {
+        font-size: 14px;
+      }
+
       .breakglass-steps {
         grid-template-columns: 1fr;
       }
-      
+
       .breakglass-visual {
-        padding: 32px 24px;
+        padding: 24px 16px;
+        border-radius: 20px;
       }
-      
+
+      .ecosystem-card {
+        padding: 24px;
+      }
+
       .footer-inner {
         grid-template-columns: 1fr;
         gap: 32px;
       }
-      
+
       .footer-bottom {
         flex-direction: column;
         text-align: center;
+        gap: 16px;
+      }
+
+      .legal-drawer summary {
+        padding: 16px;
+        font-size: 15px;
+      }
+
+      .legal-content {
+        padding: 16px;
+      }
+    }
+
+    /* Small mobile - 480px and below */
+    @media (max-width: 480px) {
+      nav {
+        padding: 10px 12px;
+      }
+
+      .logo-group {
+        gap: 8px;
+      }
+
+      .logo-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+      }
+
+      .logo-text {
+        font-size: 14px;
+      }
+
+      .health-indicator,
+      .no-cookies-tag {
+        padding: 3px 6px;
+      }
+
+      section {
+        padding: 48px 12px;
+      }
+
+      .hero {
+        padding: 80px 12px 40px;
+      }
+
+      .hero-video-container {
+        width: 140px;
+        height: 140px;
+        margin-bottom: 20px;
+      }
+
+      .hero-badge {
+        padding: 5px 10px;
+        font-size: 10px;
+      }
+
+      .hero-buttons {
+        padding: 0 8px;
+        gap: 12px;
+      }
+
+      .btn {
+        padding: 12px 20px;
+        font-size: 13px;
+        border-radius: 12px;
+      }
+
+      .principle-card {
+        padding: 20px;
+        border-radius: 16px;
+      }
+
+      .principle-title {
+        font-size: 17px;
+      }
+
+      .arch-layer {
+        padding: 16px;
+      }
+
+      .pattern-card {
+        padding: 20px;
+      }
+
+      .what-content h3 {
+        font-size: 16px;
+      }
+
+      .what-content p {
+        font-size: 14px;
+      }
+
+      .what-visual img {
+        max-width: 200px;
       }
     }
 
