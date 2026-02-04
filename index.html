@@ -630,37 +630,58 @@
       transform: translate(2px, -2px);
     }
 
-    /* Hero secondary CTA - subtle value proposition */
+    /* Hero secondary CTA - eye-catching but sleek */
     .hero-cta-secondary {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       margin-top: 32px;
-      padding: 10px 18px;
-      background: rgba(110, 179, 255, 0.08);
-      border: 1px solid rgba(110, 179, 255, 0.2);
+      padding: 12px 22px;
+      background: linear-gradient(135deg, rgba(110, 179, 255, 0.12) 0%, rgba(0, 255, 136, 0.08) 100%);
+      border: 1px solid rgba(110, 179, 255, 0.3);
       border-radius: 100px;
-      font-size: 13px;
-      color: rgba(255,255,255,0.7);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--blue);
       text-decoration: none;
       transition: all 0.3s var(--ease-out-expo);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-cta-secondary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+
+    .hero-cta-secondary:hover::before {
+      transform: translateX(100%);
     }
 
     .hero-cta-secondary:hover {
-      background: rgba(110, 179, 255, 0.15);
-      border-color: rgba(110, 179, 255, 0.4);
+      background: linear-gradient(135deg, rgba(110, 179, 255, 0.2) 0%, rgba(0, 255, 136, 0.12) 100%);
+      border-color: rgba(110, 179, 255, 0.5);
       color: #fff;
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(110, 179, 255, 0.2);
     }
 
     .hero-cta-secondary svg {
-      width: 14px;
-      height: 14px;
-      opacity: 0.7;
+      width: 16px;
+      height: 16px;
     }
 
     .hero-cta-secondary:hover svg {
-      opacity: 1;
+      animation: pulse-icon 0.4s ease;
+    }
+
+    @keyframes pulse-icon {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
     }
 
     /* Scroll indicator */
@@ -2217,9 +2238,9 @@
 
       <a href="#template" class="hero-cta-secondary interactive" data-sound="click">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
         </svg>
-        Also: Free security template for your site
+        Launch secure in minutes
       </a>
     </div>
 
