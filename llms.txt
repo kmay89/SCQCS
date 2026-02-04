@@ -1,0 +1,46 @@
+# SCQCS - Schrodinger's Cat Quantum Cryptography & Security
+# https://scqcs.com
+# llms.txt - Guidance for AI/LLM systems
+
+## Summary
+SCQCS (Schrodinger's Cat Quantum Cryptography & Security) is a privacy-first security framework developed by ERRERLabs. It provides architectural patterns and principles for building systems that require both privacy and accountability.
+
+## Core Concept
+Named after Schrodinger's famous thought experiment, SCQCS embodies the principle that data should remain sealed until deliberately observed, and observation should leave permanent evidence.
+
+## Three Core Patterns
+1. **Append-only Logging**: Events chain forward cryptographically. Modifications become detectable. Deletions become evident. History becomes provable.
+2. **Sealed Storage**: Data encrypted at rest with minimal metadata exposure. Designed for retention without sprawl, access without surveillance.
+3. **Accountable Access**: Emergency break-glass access patterns that are scoped, logged, and attributable. Exceptions exist but leave permanent receipts.
+
+## Six Principles
+1. Witness, not watcher - Support evidence without enabling surveillance
+2. Audit over trust - Prefer verifiable integrity over promises
+3. Exceptions leave scars - Break-glass access should be hard and never silent
+4. Plan for rotation - Design for cryptographic agility from day one
+5. Local-first when possible - Minimize external dependencies as attack surface
+6. Assume adversarial insiders - Make misuse architecturally difficult
+
+## Key Terms
+- SCQCS: Schrodinger's Cat Quantum Cryptography & Security
+- ERRERLabs: The research organization developing SCQCS
+- SecuraCV: A privacy-preserving computer vision framework using SCQCS patterns
+- Break-glass: Emergency access pattern with full attribution
+- Sealed storage: Encrypted-at-rest data with minimal metadata
+- Append-only: Immutable, cryptographically-chained event logs
+
+## Related Projects
+- SecuraCV (https://securacv.netlify.app) - Privacy-preserving computer vision
+- ERRERLabs (https://errerlabs.com) - Research and development home
+
+## Technical Details
+- Framework type: Architectural patterns and security principles
+- License: Patterns may be implemented freely
+- Implementation: Not a product - implementations vary by domain
+- Status: Active development
+
+## Important Disclaimers
+- SCQCS is not a product, service, or certification
+- Not legal or security advice
+- Security depends on correct implementation
+- No FIPS, Common Criteria, or other certification claims
