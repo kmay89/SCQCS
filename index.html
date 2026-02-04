@@ -686,7 +686,7 @@
 
     /* Hero AI Prompt - Floating "external" appearance */
     .hero-ai-prompt-wrapper {
-      margin-top: 48px;
+      margin-bottom: 48px;
       perspective: 1000px;
     }
 
@@ -2602,7 +2602,45 @@
     <div class="hero-bg"></div>
     
     <div class="hero-content">
-      <!-- Video/Logo Animation - Above text, contained -->
+      <!-- AI Assistant Box - Showcased at top -->
+      <div class="hero-ai-prompt-wrapper">
+        <div class="hero-ai-prompt">
+          <div class="hero-ai-prompt-chrome">
+            <span class="hero-ai-prompt-chrome-dot"></span>
+            <span class="hero-ai-prompt-chrome-dot"></span>
+            <span class="hero-ai-prompt-chrome-dot"></span>
+            <span class="hero-ai-prompt-chrome-title">AI Assistant</span>
+          </div>
+          <div class="hero-ai-prompt-content">
+            <button class="ai-prompt-copy interactive" data-sound="click">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              <span class="copy-text">Copy</span>
+              <span class="copied-text">Copied!</span>
+            </button>
+            <div class="ai-prompt-text">
+              <span class="prompt-label">&gt;</span>
+              <span class="ai-prompt-llm">
+                <span class="ai-prompt-llm-inner">
+                  <span class="ai-prompt-llm-item">Claude</span>
+                  <span class="ai-prompt-llm-item">ChatGPT</span>
+                  <span class="ai-prompt-llm-item">Gemini</span>
+                  <span class="ai-prompt-llm-item">Qwen</span>
+                  <span class="ai-prompt-llm-item">Claude</span>
+                </span>
+              </span>
+              <span>, use </span>
+              <span class="ai-prompt-url">github.com/kmay89/SCQCS</span>
+              <span class="ai-prompt-action">&nbsp;to build me a site about&nbsp;</span>
+              <span class="ai-prompt-placeholder">your idea here</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Video/Logo Animation - Below AI prompt -->
       <div class="hero-video-container">
         <video class="hero-video" autoplay muted loop playsinline preload="metadata" poster="scqcs-poster.jpeg">
           <source src="scqcs-hero.mp4" type="video/mp4" />
@@ -2645,43 +2683,6 @@
         </svg>
         Launch secure in minutes
       </a>
-
-      <div class="hero-ai-prompt-wrapper">
-        <div class="hero-ai-prompt">
-          <div class="hero-ai-prompt-chrome">
-            <span class="hero-ai-prompt-chrome-dot"></span>
-            <span class="hero-ai-prompt-chrome-dot"></span>
-            <span class="hero-ai-prompt-chrome-dot"></span>
-            <span class="hero-ai-prompt-chrome-title">AI Assistant</span>
-          </div>
-          <div class="hero-ai-prompt-content">
-            <button class="ai-prompt-copy interactive" data-sound="click">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-              </svg>
-              <span class="copy-text">Copy</span>
-              <span class="copied-text">Copied!</span>
-            </button>
-            <div class="ai-prompt-text">
-              <span class="prompt-label">&gt;</span>
-              <span class="ai-prompt-llm">
-                <span class="ai-prompt-llm-inner">
-                  <span class="ai-prompt-llm-item">Claude</span>
-                  <span class="ai-prompt-llm-item">ChatGPT</span>
-                  <span class="ai-prompt-llm-item">Gemini</span>
-                  <span class="ai-prompt-llm-item">Qwen</span>
-                  <span class="ai-prompt-llm-item">Claude</span>
-                </span>
-              </span>
-              <span>, use </span>
-              <span class="ai-prompt-url">github.com/kmay89/SCQCS</span>
-              <span class="ai-prompt-action">&nbsp;to build me a site about&nbsp;</span>
-              <span class="ai-prompt-placeholder">your idea here</span>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
 
     <div class="scroll-indicator" data-sound="click">
