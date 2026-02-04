@@ -168,3 +168,34 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 document.querySelector('.scroll-indicator').addEventListener('click', () => {
   document.querySelector('#what').scrollIntoView({ behavior: 'smooth' });
 });
+
+// ========================================
+// Copy prompt to clipboard
+// ========================================
+function copyPrompt(button) {
+  const prompt = button.dataset.prompt;
+
+  navigator.clipboard.writeText(prompt).then(() => {
+    button.classList.add('copied');
+
+    // Reset after 2 seconds
+    setTimeout(() => {
+      button.classList.remove('copied');
+    }, 2000);
+  }).catch(err => {
+    // Fallback for older browsers
+    const textarea = document.createElement('textarea');
+    textarea.value = prompt;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+
+    button.classList.add('copied');
+    setTimeout(() => {
+      button.classList.remove('copied');
+    }, 2000);
+  });
+}

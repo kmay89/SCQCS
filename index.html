@@ -215,6 +215,7 @@
 
     html {
       scroll-behavior: smooth;
+      overflow-x: hidden;
     }
 
     body {
@@ -225,6 +226,7 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       overflow-x: hidden;
+      min-width: 320px;
     }
 
     ::selection {
@@ -489,19 +491,21 @@
       position: relative;
       z-index: 2;
       max-width: 900px;
+      width: 100%;
+      padding: 0 16px;
     }
 
     /* Hero video container - above text, contained */
     .hero-video-container {
-      width: 260px;
-      height: 260px;
+      width: min(260px, 70vw);
+      height: min(260px, 70vw);
       margin: 0 auto 48px;
-      border-radius: 32px;
+      border-radius: min(32px, 8vw);
       overflow: hidden;
       border: 1px solid var(--border);
       background: var(--surface);
       position: relative;
-      box-shadow: 
+      box-shadow:
         0 0 0 1px rgba(255,255,255,0.05),
         0 25px 60px rgba(0,0,0,0.6),
         0 0 120px var(--accent-soft);
@@ -626,37 +630,58 @@
       transform: translate(2px, -2px);
     }
 
-    /* Hero secondary CTA - subtle value proposition */
+    /* Hero secondary CTA - eye-catching but sleek */
     .hero-cta-secondary {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       margin-top: 32px;
-      padding: 10px 18px;
-      background: rgba(110, 179, 255, 0.08);
-      border: 1px solid rgba(110, 179, 255, 0.2);
+      padding: 12px 22px;
+      background: linear-gradient(135deg, rgba(110, 179, 255, 0.12) 0%, rgba(0, 255, 136, 0.08) 100%);
+      border: 1px solid rgba(110, 179, 255, 0.3);
       border-radius: 100px;
-      font-size: 13px;
-      color: rgba(255,255,255,0.7);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--blue);
       text-decoration: none;
       transition: all 0.3s var(--ease-out-expo);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-cta-secondary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+
+    .hero-cta-secondary:hover::before {
+      transform: translateX(100%);
     }
 
     .hero-cta-secondary:hover {
-      background: rgba(110, 179, 255, 0.15);
-      border-color: rgba(110, 179, 255, 0.4);
+      background: linear-gradient(135deg, rgba(110, 179, 255, 0.2) 0%, rgba(0, 255, 136, 0.12) 100%);
+      border-color: rgba(110, 179, 255, 0.5);
       color: #fff;
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(110, 179, 255, 0.2);
     }
 
     .hero-cta-secondary svg {
-      width: 14px;
-      height: 14px;
-      opacity: 0.7;
+      width: 16px;
+      height: 16px;
     }
 
     .hero-cta-secondary:hover svg {
-      opacity: 1;
+      animation: pulse-icon 0.4s ease;
+    }
+
+    @keyframes pulse-icon {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
     }
 
     /* Scroll indicator */
@@ -690,6 +715,31 @@
     .scroll-indicator svg {
       width: 24px;
       height: 24px;
+    }
+
+    /* No cookies tag */
+    .no-cookies-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(0, 255, 136, 0.1);
+      border-radius: 20px;
+      font-size: 11px;
+      color: var(--success);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.9;
+      transition: opacity 0.2s ease;
+    }
+
+    .no-cookies-tag:hover {
+      opacity: 1;
+    }
+
+    .no-cookies-tag svg {
+      width: 12px;
+      height: 12px;
     }
 
     /* Section styling */
@@ -740,9 +790,9 @@
 
     /* What is SCQCS section */
     .what-section {
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, #0f0e0a 0%, #0c0b08 50%, #0f0e0a 100%);
+      border-top: 1px solid rgba(245, 197, 24, 0.1);
+      border-bottom: 1px solid rgba(245, 197, 24, 0.1);
     }
 
     .what-grid {
@@ -855,7 +905,7 @@
 
     .principles-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
       gap: 24px;
       margin-top: 64px;
     }
@@ -946,8 +996,8 @@
 
     /* Architecture section */
     .architecture-section {
-      background: var(--black);
-      border-top: 1px solid var(--border);
+      background: linear-gradient(180deg, #0a080f 0%, #08060c 50%, #0a080f 100%);
+      border-top: 1px solid rgba(138, 110, 255, 0.1);
     }
 
     .arch-grid {
@@ -1279,6 +1329,192 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+    }
+
+    /* AI Prompt Display */
+    .ai-prompt-display {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(110, 179, 255, 0.2);
+      border-radius: 16px;
+      padding: 24px 32px;
+      margin-top: 40px;
+      font-family: var(--mono);
+      font-size: 15px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ai-prompt-display::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--success), var(--accent), var(--blue));
+      background-size: 300% 100%;
+      animation: prompt-gradient 4s ease infinite;
+    }
+
+    @keyframes prompt-gradient {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .ai-prompt-text {
+      color: var(--text-secondary);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0;
+      line-height: 1.8;
+    }
+
+    .ai-prompt-text .prompt-label {
+      color: var(--text-tertiary);
+      margin-right: 8px;
+    }
+
+    .ai-prompt-llm {
+      display: inline-flex;
+      position: relative;
+      min-width: 90px;
+      height: 1.4em;
+      overflow: hidden;
+      vertical-align: bottom;
+    }
+
+    .ai-prompt-llm-inner {
+      display: flex;
+      flex-direction: column;
+      animation: rotate-llm 8s ease-in-out infinite;
+    }
+
+    .ai-prompt-llm-item {
+      height: 1.4em;
+      display: flex;
+      align-items: center;
+      font-weight: 600;
+      color: var(--blue);
+      white-space: nowrap;
+    }
+
+    .ai-prompt-llm-item:nth-child(1) { color: #cc9b7a; }
+    .ai-prompt-llm-item:nth-child(2) { color: #10a37f; }
+    .ai-prompt-llm-item:nth-child(3) { color: #4285f4; }
+    .ai-prompt-llm-item:nth-child(4) { color: #615eff; }
+
+    @keyframes rotate-llm {
+      0%, 20% { transform: translateY(0); }
+      25%, 45% { transform: translateY(-1.4em); }
+      50%, 70% { transform: translateY(-2.8em); }
+      75%, 95% { transform: translateY(-4.2em); }
+      100% { transform: translateY(-5.6em); }
+    }
+
+    .ai-prompt-url {
+      color: var(--success);
+      font-weight: 500;
+    }
+
+    .ai-prompt-action {
+      color: var(--text);
+    }
+
+    .ai-prompt-placeholder {
+      display: inline-block;
+      min-width: 180px;
+      padding: 2px 12px;
+      background: rgba(110, 179, 255, 0.1);
+      border: 1px dashed rgba(110, 179, 255, 0.3);
+      border-radius: 6px;
+      color: var(--text-tertiary);
+      font-style: italic;
+    }
+
+    .ai-prompt-copy {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: rgba(110, 179, 255, 0.1);
+      border: 1px solid rgba(110, 179, 255, 0.2);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .ai-prompt-copy:hover {
+      background: rgba(110, 179, 255, 0.2);
+      border-color: rgba(110, 179, 255, 0.4);
+      color: var(--text);
+    }
+
+    .ai-prompt-copy svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .ai-prompt-copy.copied {
+      background: rgba(0, 255, 136, 0.15);
+      border-color: rgba(0, 255, 136, 0.3);
+      color: var(--success);
+    }
+
+    .ai-prompt-copy .copy-text { display: inline; }
+    .ai-prompt-copy .copied-text { display: none; }
+    .ai-prompt-copy.copied .copy-text { display: none; }
+    .ai-prompt-copy.copied .copied-text { display: inline; }
+
+    @media (max-width: 768px) {
+      .ai-prompt-display {
+        padding: 20px;
+        padding-top: 50px;
+        font-size: 13px;
+      }
+
+      .ai-prompt-text {
+        line-height: 2;
+      }
+
+      .ai-prompt-placeholder {
+        min-width: 120px;
+      }
+
+      .ai-prompt-copy {
+        top: 10px;
+        right: 10px;
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .ai-prompt-display {
+        padding: 16px;
+        padding-top: 46px;
+        font-size: 12px;
+      }
+
+      .ai-prompt-copy {
+        padding: 5px 8px;
+      }
+
+      .ai-prompt-copy span {
+        display: none;
+      }
+
+      .ai-prompt-copy svg {
+        width: 16px;
+        height: 16px;
+      }
     }
 
     .template-hero {
@@ -1798,78 +2034,295 @@
       color: var(--text);
     }
 
-    /* Responsive */
+    /* ===== RESPONSIVE ===== */
+
+    /* Tablet - 1024px and below */
     @media (max-width: 1024px) {
       .arch-grid {
         grid-template-columns: 1fr;
       }
-      
+
       .what-grid {
         grid-template-columns: 1fr;
         gap: 48px;
       }
-      
+
       .what-visual {
         order: -1;
       }
-      
+
       .patterns-grid {
         grid-template-columns: 1fr;
         gap: 20px;
       }
-      
+
       .ecosystem-grid {
         grid-template-columns: 1fr;
       }
-      
+
       .footer-inner {
         grid-template-columns: 1fr 1fr;
       }
+
+      .breakglass-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
     }
 
+    /* Mobile - 768px and below */
     @media (max-width: 768px) {
       nav {
         padding: 12px 16px;
       }
-      
+
       .nav-links {
         display: none;
       }
-      
+
+      .logo-group {
+        gap: 10px;
+      }
+
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+      }
+
+      .logo-text {
+        font-size: 16px;
+      }
+
+      .health-indicator {
+        padding: 4px 8px;
+        font-size: 10px;
+        gap: 5px;
+      }
+
       .health-indicator span {
         display: none;
       }
-      
+
+      .health-dot {
+        width: 6px;
+        height: 6px;
+      }
+
+      .no-cookies-tag {
+        padding: 4px 8px;
+        font-size: 10px;
+        gap: 4px;
+      }
+
+      .no-cookies-tag span {
+        display: none;
+      }
+
+      .no-cookies-tag svg {
+        width: 10px;
+        height: 10px;
+      }
+
       section {
-        padding: 80px 20px;
+        padding: 60px 16px;
       }
-      
+
+      .section-inner {
+        width: 100%;
+      }
+
+      .section-title {
+        letter-spacing: -1px;
+      }
+
+      .section-description {
+        font-size: 16px;
+      }
+
       .hero {
-        padding: 100px 20px 60px;
+        padding: 90px 16px 50px;
+        min-height: auto;
       }
-      
+
       .hero-video-container {
-        width: 180px;
-        height: 180px;
-        margin-bottom: 32px;
+        width: 160px;
+        height: 160px;
+        margin-bottom: 24px;
       }
-      
+
+      .hero-badge {
+        padding: 6px 12px;
+        font-size: 11px;
+        margin-bottom: 16px;
+      }
+
+      .hero-title {
+        letter-spacing: -1px;
+        margin-bottom: 16px;
+      }
+
+      .hero-subtitle {
+        font-size: 15px;
+        margin-bottom: 28px;
+        padding: 0 8px;
+      }
+
+      .hero-buttons {
+        flex-direction: column;
+        width: 100%;
+        padding: 0 16px;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 14px 24px;
+        font-size: 14px;
+      }
+
+      .hero-cta-secondary {
+        font-size: 13px;
+        margin-top: 20px;
+      }
+
+      .scroll-indicator {
+        bottom: 24px;
+      }
+
+      .principles-grid {
+        gap: 16px;
+        margin-top: 40px;
+      }
+
+      .principle-card {
+        padding: 24px;
+        border-radius: 20px;
+      }
+
+      .principle-title {
+        font-size: 19px;
+      }
+
+      .principle-text {
+        font-size: 14px;
+      }
+
       .breakglass-steps {
         grid-template-columns: 1fr;
       }
-      
+
       .breakglass-visual {
-        padding: 32px 24px;
+        padding: 24px 16px;
+        border-radius: 20px;
       }
-      
+
+      .ecosystem-card {
+        padding: 24px;
+      }
+
       .footer-inner {
         grid-template-columns: 1fr;
         gap: 32px;
       }
-      
+
       .footer-bottom {
         flex-direction: column;
         text-align: center;
+        gap: 16px;
+      }
+
+      .legal-drawer summary {
+        padding: 16px;
+        font-size: 15px;
+      }
+
+      .legal-content {
+        padding: 16px;
+      }
+    }
+
+    /* Small mobile - 480px and below */
+    @media (max-width: 480px) {
+      nav {
+        padding: 10px 12px;
+      }
+
+      .logo-group {
+        gap: 8px;
+      }
+
+      .logo-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+      }
+
+      .logo-text {
+        font-size: 14px;
+      }
+
+      .health-indicator,
+      .no-cookies-tag {
+        padding: 3px 6px;
+      }
+
+      section {
+        padding: 48px 12px;
+      }
+
+      .hero {
+        padding: 80px 12px 40px;
+      }
+
+      .hero-video-container {
+        width: 140px;
+        height: 140px;
+        margin-bottom: 20px;
+      }
+
+      .hero-badge {
+        padding: 5px 10px;
+        font-size: 10px;
+      }
+
+      .hero-buttons {
+        padding: 0 8px;
+        gap: 12px;
+      }
+
+      .btn {
+        padding: 12px 20px;
+        font-size: 13px;
+        border-radius: 12px;
+      }
+
+      .principle-card {
+        padding: 20px;
+        border-radius: 16px;
+      }
+
+      .principle-title {
+        font-size: 17px;
+      }
+
+      .arch-layer {
+        padding: 16px;
+      }
+
+      .pattern-card {
+        padding: 20px;
+      }
+
+      .what-content h3 {
+        font-size: 16px;
+      }
+
+      .what-content p {
+        font-size: 14px;
+      }
+
+      .what-visual img {
+        max-width: 200px;
       }
     }
 
@@ -1906,6 +2359,13 @@
         <div class="health-indicator" title="Framework documentation online">
           <span class="health-dot"></span>
           <span>Online</span>
+        </div>
+        <div class="no-cookies-tag" title="No cookies, analytics, or tracking">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M4.93 4.93l14.14 14.14"/>
+          </svg>
+          <span>No cookies</span>
         </div>
       </div>
 
@@ -1964,9 +2424,9 @@
 
       <a href="#template" class="hero-cta-secondary interactive" data-sound="click">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
         </svg>
-        Also: Free security template for your site
+        Launch secure in minutes
       </a>
     </div>
 
@@ -2257,6 +2717,33 @@
       <p class="section-description reveal reveal-delay-2">
         This repository is designed to be forked and adapted. Get a secure, privacy-respecting static site in minutes.
       </p>
+
+      <div class="ai-prompt-display reveal reveal-delay-3">
+        <button class="ai-prompt-copy interactive" data-sound="click" data-prompt="Use github.com/kmay89/SCQCS to build me a site about " onclick="copyPrompt(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          <span class="copy-text">Copy prompt</span>
+          <span class="copied-text">Copied!</span>
+        </button>
+        <div class="ai-prompt-text">
+          <span class="prompt-label">&gt;</span>
+          <span class="ai-prompt-llm">
+            <span class="ai-prompt-llm-inner">
+              <span class="ai-prompt-llm-item">Claude</span>
+              <span class="ai-prompt-llm-item">ChatGPT</span>
+              <span class="ai-prompt-llm-item">Gemini</span>
+              <span class="ai-prompt-llm-item">Qwen</span>
+              <span class="ai-prompt-llm-item">Claude</span>
+            </span>
+          </span>
+          <span>, use </span>
+          <span class="ai-prompt-url">github.com/kmay89/SCQCS</span>
+          <span class="ai-prompt-action">&nbsp;to build me a site about&nbsp;</span>
+          <span class="ai-prompt-placeholder">your idea here</span>
+        </div>
+      </div>
 
       <div class="template-hero reveal">
         <div class="template-header">
