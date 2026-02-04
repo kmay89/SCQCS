@@ -192,7 +192,7 @@ function copyPrompt(button) {
   const currentLLM = llmItems[currentIndex]?.textContent || 'Claude';
 
   // Build the full prompt
-  const prompt = `${currentLLM}, use github.com/kmay89/SCQCS to build me a site about `;
+  const prompt = `${currentLLM}, use github.com/kmay89/SCQCS as a template to build me a secure website about `;
 
   navigator.clipboard.writeText(prompt).then(() => {
     button.classList.add('copied');
