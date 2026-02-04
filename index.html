@@ -694,21 +694,17 @@
 
     /* No cookies tag */
     .no-cookies-tag {
-      position: absolute;
-      bottom: 40px;
-      right: 32px;
-      z-index: 2;
-      display: inline-flex;
+      display: flex;
       align-items: center;
       gap: 6px;
-      padding: 6px 12px;
-      background: rgba(0, 255, 136, 0.08);
-      border: 1px solid rgba(0, 255, 136, 0.2);
+      padding: 4px 10px;
+      background: rgba(0, 255, 136, 0.1);
       border-radius: 20px;
       font-size: 11px;
       color: var(--success);
-      letter-spacing: 0.02em;
-      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.9;
       transition: opacity 0.2s ease;
     }
 
@@ -717,18 +713,8 @@
     }
 
     .no-cookies-tag svg {
-      width: 14px;
-      height: 14px;
-      opacity: 0.9;
-    }
-
-    @media (max-width: 768px) {
-      .no-cookies-tag {
-        bottom: 24px;
-        right: 16px;
-        font-size: 10px;
-        padding: 5px 10px;
-      }
+      width: 12px;
+      height: 12px;
     }
 
     /* Section styling */
@@ -1878,7 +1864,11 @@
       .health-indicator span {
         display: none;
       }
-      
+
+      .no-cookies-tag span {
+        display: none;
+      }
+
       section {
         padding: 80px 20px;
       }
@@ -1946,6 +1936,13 @@
           <span class="health-dot"></span>
           <span>Online</span>
         </div>
+        <div class="no-cookies-tag" title="No cookies, analytics, or tracking">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M4.93 4.93l14.14 14.14"/>
+          </svg>
+          <span>No cookies</span>
+        </div>
       </div>
 
       <div class="nav-links">
@@ -2007,14 +2004,6 @@
         </svg>
         Also: Free security template for your site
       </a>
-    </div>
-
-    <div class="no-cookies-tag" title="This site doesn't use cookies, analytics, or tracking">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"/>
-        <path d="M4.93 4.93l14.14 14.14"/>
-      </svg>
-      <span>No cookies</span>
     </div>
 
     <div class="scroll-indicator" data-sound="click">
