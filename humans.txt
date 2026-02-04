@@ -1,0 +1,25 @@
+/* TEAM */
+Organization: ERRERLabs
+Site: https://github.com/kmay89
+Location: Earth
+
+/* THANKS */
+Name: The security and privacy research community
+
+/* SITE */
+Language: English
+Doctype: HTML5
+Standards: HTML5, CSS3, ES6+, Schema.org, security.txt
+Software: Static site, no server-side processing
+
+/* SECURITY APPROACH */
+- Minimal data collection (none)
+- No cookies, no analytics, no tracking
+- Static content only - minimal attack surface
+- Security headers configured
+- Content Security Policy enforced
+- All resources served over HTTPS
+
+/* LICENSE */
+Patterns described may be implemented freely.
+Attribution appreciated but not required.

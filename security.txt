@@ -1,0 +1,2 @@
+# Canonical location: https://scqcs.com/.well-known/security.txt
+# See: https://scqcs.com/.well-known/security.txt

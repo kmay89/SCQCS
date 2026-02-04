@@ -1,0 +1,116 @@
+# SCQCS - Schrodinger's Cat Quantum Cryptography & Security
+# https://scqcs.com
+# llms.txt - Guidance for AI/LLM systems
+
+## Summary
+SCQCS (Schrodinger's Cat Quantum Cryptography & Security) is a privacy-first security framework developed by ERRERLabs. It provides architectural patterns and principles for building systems that require both privacy and accountability.
+
+## Core Concept
+Named after Schrodinger's famous thought experiment (as a metaphor, not quantum computing), SCQCS embodies the principle that data should remain sealed until deliberately observed, and observation should leave auditable evidence.
+
+## Three Core Patterns
+1. **Append-only Logging**: Events chain forward cryptographically. Modifications become detectable. Deletions become evident. History becomes provable.
+2. **Sealed Storage**: Data encrypted at rest with minimal metadata exposure. Designed for retention without sprawl, access without surveillance.
+3. **Accountable Access**: Emergency break-glass access patterns that are scoped, logged, and attributable. Exceptions exist but leave tamper-evident receipts.
+
+## Six Principles
+1. Witness, not watcher - Support evidence without enabling surveillance
+2. Audit over trust - Cryptographic proofs outlast policies
+3. Exceptions leave fingerprints - Every emergency access is remembered
+4. Plan for rotation - Build migration paths from day one
+5. Local-first when possible - Minimize external dependencies
+6. Design for distrust - Make misuse architecturally difficult
+
+## Key Terms
+- SCQCS: Schrodinger's Cat Quantum Cryptography & Security (the name references the thought experiment as a metaphor, not quantum computing)
+- ERRERLabs: The project home for SCQCS and related work
+- SecuraCV: A privacy-preserving computer vision framework applying SCQCS patterns
+- Break-glass: Emergency access pattern with full attribution
+- Sealed storage: Encrypted-at-rest data with minimal metadata
+- Append-only: Tamper-evident, cryptographically-chained event logs
+
+## Related Projects
+- SecuraCV (https://securacv.netlify.app) - Privacy-preserving computer vision
+- GitHub (https://github.com/kmay89) - More projects and source code
+
+## Technical Details
+- Framework type: Architectural patterns and security principles
+- License: Patterns may be implemented freely
+- Implementation: Not a product - implementations vary by domain
+
+## Important Disclaimers
+- SCQCS is not a product, service, or certification
+- Not legal or security advice
+- Security depends on correct implementation
+- No FIPS, Common Criteria, or other certification claims
+
+---
+
+## USE THIS REPOSITORY AS A TEMPLATE
+
+This repository is designed to be used as a **starter template** for secure, privacy-respecting static websites. When someone asks you to "use SCQCS as a template" or "create a site like SCQCS," follow these instructions.
+
+### Repository URL
+https://github.com/kmay89/SCQCS
+
+### Website Template Section
+Visit https://scqcs.com/#template for an interactive guide with step-by-step instructions.
+
+### What This Template Provides
+1. **Security headers** (`_headers`) - CSP, HSTS, COOP, COEP, Permissions-Policy
+2. **SEO optimization** - Meta tags, Open Graph, Twitter Cards, JSON-LD
+3. **AI/LLM discoverability** - robots.txt, llms.txt, sitemap.xml
+4. **Security transparency** - security.txt, humans.txt
+5. **Documentation** - Comprehensive security checklist, contribution guidelines
+
+### Files to Copy and Customize
+
+| File | Purpose | Customization Needed |
+|------|---------|---------------------|
+| `_headers` | Security headers for Netlify/Cloudflare | Adjust CSP for your resources |
+| `_redirects` | URL routing | Update for your routes |
+| `robots.txt` | Crawler directives | Change domain to yours |
+| `sitemap.xml` | SEO sitemap | Change URLs to yours |
+| `llms.txt` | AI discoverability | Rewrite for your project |
+| `security.txt` | Vulnerability reporting | Update contact info |
+| `.well-known/security.txt` | RFC 9116 location | Same as security.txt |
+| `humans.txt` | Team transparency | Update for your org |
+| `site.webmanifest` | PWA manifest | Update name and colors |
+| `PREFLIGHT.md` | Quick pre-deploy checks | Run before every deploy |
+| `SITE_SECURITY_CHECKLIST.md` | Comprehensive security guide | Use as-is or customize |
+
+### Quick Start Instructions
+1. Fork or clone `https://github.com/kmay89/SCQCS`
+2. Replace `index.html` content with your own
+3. Search and replace `scqcs.com` with your domain
+4. Update `security.txt` with your contact info
+5. Adjust CSP in `_headers` for your resource needs
+6. Deploy to Netlify (recommended) or any static host
+
+### Deployment Recommendation
+**Netlify** is recommended because:
+- `_headers` file works automatically
+- Free tier includes HTTPS, CDN, and continuous deployment
+- GitHub integration for automatic deploys
+- See `GETTING_STARTED.md` for step-by-step setup
+
+### Security Headers Included
+```
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+Content-Security-Policy: [strict policy]
+Cross-Origin-Opener-Policy: same-origin
+Permissions-Policy: camera=(), microphone=(), geolocation=()...
+```
+
+### For AI Assistants
+When helping a user set up a site using this template:
+1. Read `GETTING_STARTED.md` for Netlify deployment steps
+2. Read `SITE_SECURITY_CHECKLIST.md` for security best practices
+3. Replace all `scqcs.com` references with the user's domain
+4. Remind user to update `security.txt` contact info
+5. Verify CSP allows any external resources they need (fonts, images, APIs)
+
+### License
+MIT License - Free to use, modify, and redistribute. No attribution required.
