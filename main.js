@@ -155,41 +155,26 @@ const VideoManager = {
   },
 
   setupMobileOptimizations() {
-    // On mobile, reset video periodically to prevent memory buildup
+    // On mobile, control looping manually to save resources when not visible
     // Remove loop attribute to control it manually
     this.video.removeAttribute('loop');
 
-    let loopCount = 0;
-    const maxLoops = 5; // Reset after 5 loops on mobile
-
     this._handlers.ended = () => {
       if (!this.isVisible || document.hidden) {
-        return; // Don't loop if not visible
+        return; // Don't loop if not visible - this is the main memory saver
       }
 
-      loopCount++;
-
-      if (loopCount >= maxLoops) {
-        loopCount = 0;
-        // Reload the video to clear memory. load() also resets currentTime.
-        // Use 'canplay' event to play once ready, avoiding race condition.
-        this.video.addEventListener('canplay', () => this.play(), { once: true });
-        this.video.load();
-      } else {
-        this.video.currentTime = 0;
-        this.play();
-      }
+      // Just restart the video without reloading - avoids flash/page jump
+      this.video.currentTime = 0;
+      this.play();
     };
     this.video.addEventListener('ended', this._handlers.ended);
   },
 
   setupCleanup() {
+    // Pause video when leaving page, but don't clear src (causes issues with bfcache)
     this._handlers.pagehide = () => {
       this.pause();
-      if (this.video) {
-        this.video.src = '';
-        this.video.load();
-      }
     };
     window.addEventListener('pagehide', this._handlers.pagehide);
 
@@ -197,6 +182,14 @@ const VideoManager = {
       this.pause();
     };
     window.addEventListener('beforeunload', this._handlers.beforeunload);
+
+    // Handle page restore from bfcache
+    this._handlers.pageshow = (event) => {
+      if (event.persisted && this.isVisible && !document.hidden) {
+        this.play();
+      }
+    };
+    window.addEventListener('pageshow', this._handlers.pageshow);
   },
 
   // Permanently disable video and clean up all listeners
@@ -224,6 +217,15 @@ const VideoManager = {
     }
     if (this._handlers.visibility) {
       document.removeEventListener('visibilitychange', this._handlers.visibility);
+    }
+    if (this._handlers.pagehide) {
+      window.removeEventListener('pagehide', this._handlers.pagehide);
+    }
+    if (this._handlers.beforeunload) {
+      window.removeEventListener('beforeunload', this._handlers.beforeunload);
+    }
+    if (this._handlers.pageshow) {
+      window.removeEventListener('pageshow', this._handlers.pageshow);
     }
 
     this._handlers = {};
