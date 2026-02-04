@@ -1424,10 +1424,33 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(110, 179, 255, 0.1);
-      border: 1px solid rgba(110, 179, 255, 0.2);
-      border-radius: 10px;
+      background: rgba(0, 255, 136, 0.1);
+      border: 2px solid rgba(0, 255, 136, 0.4);
+      border-radius: 8px;
       font-size: 16px;
+      position: relative;
+    }
+
+    .template-include-icon::after {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 6px;
+      border-left: 2px solid var(--success);
+      border-bottom: 2px solid var(--success);
+      transform: rotate(-45deg);
+      top: 50%;
+      left: 50%;
+      margin-top: -4px;
+      margin-left: -5px;
+    }
+
+    .template-include-icon span {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      font-size: 14px;
+      line-height: 1;
     }
 
     .template-include-text {
@@ -2210,7 +2233,7 @@
           <h4>What's included — free privacy tools</h4>
 
           <div class="template-include-item">
-            <div class="template-include-icon">🛡️</div>
+            <div class="template-include-icon"><span>🛡️</span></div>
             <div class="template-include-text">
               <strong>_headers</strong>
               <span>A+ security headers: CSP, HSTS, COOP, COEP, Permissions-Policy</span>
@@ -2218,7 +2241,7 @@
           </div>
 
           <div class="template-include-item">
-            <div class="template-include-icon">🔒</div>
+            <div class="template-include-icon"><span>🔒</span></div>
             <div class="template-include-text">
               <strong>security.txt</strong>
               <span>RFC 9116 compliant vulnerability disclosure policy</span>
@@ -2226,7 +2249,7 @@
           </div>
 
           <div class="template-include-item">
-            <div class="template-include-icon">🤖</div>
+            <div class="template-include-icon"><span>🤖</span></div>
             <div class="template-include-text">
               <strong>robots.txt + llms.txt</strong>
               <span>AI crawler directives and LLM-readable documentation</span>
@@ -2234,7 +2257,7 @@
           </div>
 
           <div class="template-include-item">
-            <div class="template-include-icon">🔍</div>
+            <div class="template-include-icon"><span>🔍</span></div>
             <div class="template-include-text">
               <strong>SEO optimized</strong>
               <span>Meta tags, Open Graph, Twitter Cards, JSON-LD structured data</span>
@@ -2242,7 +2265,7 @@
           </div>
 
           <div class="template-include-item">
-            <div class="template-include-icon">📋</div>
+            <div class="template-include-icon"><span>📋</span></div>
             <div class="template-include-text">
               <strong>Security checklist</strong>
               <span>Comprehensive pre-launch audit guide with authoritative sources</span>
@@ -2250,7 +2273,7 @@
           </div>
 
           <div class="template-include-item">
-            <div class="template-include-icon">📖</div>
+            <div class="template-include-icon"><span>📖</span></div>
             <div class="template-include-text">
               <strong>Getting started guide</strong>
               <span>Step-by-step Netlify deployment walkthrough</span>
@@ -2258,7 +2281,7 @@
           </div>
 
           <div class="template-include-item">
-            <div class="template-include-icon">🚫</div>
+            <div class="template-include-icon"><span>🚫</span></div>
             <div class="template-include-text">
               <strong>Zero tracking</strong>
               <span>No cookies, no analytics, no localStorage — verified clean</span>
@@ -2266,7 +2289,7 @@
           </div>
 
           <div class="template-include-item">
-            <div class="template-include-icon">⚡</div>
+            <div class="template-include-icon"><span>⚡</span></div>
             <div class="template-include-text">
               <strong>Production ready</strong>
               <span>Responsive design, accessibility, performance optimized</span>

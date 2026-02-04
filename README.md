@@ -1,125 +1,161 @@
-# SCQCS
+<p align="center">
+  <img src="scqcs-poster.jpeg" alt="SCQCS Logo" width="400">
+</p>
 
-**Schrödinger's Cat Quantum Cryptography & Security**
+<h1 align="center">SCQCS</h1>
+<h3 align="center">Schrödinger's Cat Quantum Cryptography & Security</h3>
 
-A privacy-first security framework built on append-only logging, sealed storage, and accountable access patterns.
+<p align="center">
+  <strong>Your website, secured from day one.</strong><br>
+  A privacy-first template that gives you enterprise-grade security headers, SEO optimization, and AI discoverability — all in one click.
+</p>
 
-## Overview
-
-SCQCS defines architectural patterns for systems that need both privacy and accountability. Named after the famous thought experiment (as a metaphor, not quantum computing), it embodies a core insight: data should remain sealed until deliberately observed—and observation should leave auditable evidence.
-
-**This is not a product.** It's a philosophy and pattern library. Implementations vary by domain.
-
-## Core Patterns
-
-1. **Append-only logging** — Events chain forward cryptographically. History becomes verifiable.
-2. **Sealed storage** — Data encrypted at rest with minimal metadata exposure.
-3. **Accountable access** — Emergency access that's scoped, logged, and attributable.
-
-## Principles
-
-1. Witness, not watcher
-2. Audit over trust
-3. Exceptions leave scars
-4. Plan for rotation
-5. Local-first when possible
-6. Assume adversarial insiders
-
-## Website
-
-Visit [scqcs.com](https://scqcs.com) for the full framework documentation.
+<p align="center">
+  <a href="https://scqcs.com">Live Demo</a> &nbsp;·&nbsp;
+  <a href="#-your-first-secure-website-in-5-minutes">Get Started</a> &nbsp;·&nbsp;
+  <a href="#-whats-included">What's Included</a>
+</p>
 
 ---
 
-## Use This As a Template
+## Welcome!
 
-This repository is designed to be a **reference implementation** for secure, privacy-respecting static sites. Feel free to use it as a starting point for your own projects.
+You just found the easiest way to launch a secure, privacy-respecting website.
 
-**See the interactive guide:** [scqcs.com/#template](https://scqcs.com/#template)
+Whether you're building a portfolio, a product page, or documentation — this template gives you everything the pros use, without needing to be one.
 
-### What's Included
-
-| File | Purpose |
-|------|---------|
-| `_headers` | Netlify security headers (CSP, HSTS, COOP, etc.) |
-| `_redirects` | URL routing rules |
-| `robots.txt` | Search engine and AI crawler directives |
-| `sitemap.xml` | SEO sitemap |
-| `llms.txt` | AI/LLM-readable site summary (also for AI assistants) |
-| `security.txt` | Security vulnerability reporting (RFC 9116) |
-| `humans.txt` | Team and site transparency |
-| `GETTING_STARTED.md` | Step-by-step Netlify deployment guide |
-| `SITE_SECURITY_CHECKLIST.md` | Comprehensive pre-launch checklist |
-
-### Quick Start
-
-1. **Fork or clone** this repository
-2. **Replace content** in `index.html` with your own
-3. **Update meta tags** — change `scqcs.com` to your domain
-4. **Update `site.webmanifest`** — change app name and colors
-5. **Update security/SEO files** — replace domain references
-6. **Deploy to Netlify** — `_headers` and `_redirects` work automatically
-
-**New to Netlify?** See [`GETTING_STARTED.md`](GETTING_STARTED.md) for a complete deployment walkthrough.
-
-### Security Headers You Get
-
-```
-X-Frame-Options: DENY
-X-Content-Type-Options: nosniff
-Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
-Content-Security-Policy: [strict policy, no unsafe-inline for scripts]
-Cross-Origin-Opener-Policy: same-origin
-Permissions-Policy: camera=(), microphone=(), geolocation=()...
-```
-
-### Checklist
-
-See [`SITE_SECURITY_CHECKLIST.md`](SITE_SECURITY_CHECKLIST.md) for a comprehensive guide covering:
-- Security headers and CSP configuration
-- SEO meta tags and structured data
-- AI/LLM discoverability
-- Legal copy guidelines
-- Pre-launch audit checklist
+**No tracking. No cookies. No surveillance.** Just clean, fast, secure.
 
 ---
 
-## For AI Assistants
+## Your First Secure Website in 5 Minutes
 
-If a user asks you to "use SCQCS as a template" or "create a site like SCQCS," this repository is designed for that purpose.
+You don't need to understand security headers or cryptographic policies. We've done that work for you. Just follow these steps:
 
-**Key files for AI assistants:**
-- [`llms.txt`](llms.txt) — Complete instructions for using this as a template
-- [`GETTING_STARTED.md`](GETTING_STARTED.md) — Step-by-step Netlify deployment
-- [`SITE_SECURITY_CHECKLIST.md`](SITE_SECURITY_CHECKLIST.md) — Security best practices
+### Step 1: Copy This Template
 
-**Quick reference:**
-1. Fork `https://github.com/kmay89/SCQCS`
-2. Replace `scqcs.com` with user's domain in all files
-3. Update `security.txt` contact info
-4. Adjust CSP in `_headers` for user's external resources
-5. Deploy to Netlify (free tier works)
+Click the green **"Use this template"** button at the top of this page, or:
+
+```
+Fork → Your own copy → Ready to customize
+```
+
+### Step 2: Connect to Netlify (Free)
+
+1. Go to [netlify.com](https://netlify.com) and sign up (free)
+2. Click **"Add new site"** → **"Import an existing project"**
+3. Connect your GitHub account
+4. Select your forked SCQCS repository
+5. Click **"Deploy"**
+
+That's it. Your site is live with HTTPS, CDN, and security headers — automatically.
+
+### Step 3: Make It Yours
+
+Replace `index.html` with your content. The security stays intact.
+
+**Quick customizations:**
+- Change `scqcs.com` to your domain in all files
+- Update `security.txt` with your contact info
+- Adjust colors in the CSS to match your brand
+
+### Step 4: Celebrate
+
+You just deployed a website more secure than 90% of the internet.
+
+---
+
+## What's Included
+
+Everything you need. Nothing you don't.
+
+| File | What It Does |
+|------|--------------|
+| `_headers` | A+ security headers that work automatically on Netlify |
+| `security.txt` | Lets security researchers contact you responsibly |
+| `robots.txt` | Controls how search engines see your site |
+| `llms.txt` | Helps AI assistants understand your site |
+| `sitemap.xml` | Improves your SEO automatically |
+| `site.webmanifest` | Makes your site installable as an app |
+| `GETTING_STARTED.md` | Detailed walkthrough if you need more help |
+| `SITE_SECURITY_CHECKLIST.md` | Pre-launch checklist with authoritative sources |
+
+### Security You Get For Free
+
+```
+X-Frame-Options: DENY                           (Prevents clickjacking)
+X-Content-Type-Options: nosniff                 (Prevents MIME attacks)
+Strict-Transport-Security: max-age=31536000     (Forces HTTPS)
+Content-Security-Policy: [strict policy]        (Blocks malicious scripts)
+Cross-Origin-Opener-Policy: same-origin         (Isolates your site)
+Permissions-Policy: camera=(), microphone=()... (No creepy permissions)
+```
+
+---
+
+## The Philosophy
+
+SCQCS stands for **Schrödinger's Cat Quantum Cryptography & Security**.
+
+It's a metaphor, not quantum computing. The idea: data should remain sealed until deliberately observed — and observation should leave evidence.
+
+### Three Patterns
+
+1. **Append-only logging** — Events chain forward. History becomes verifiable.
+2. **Sealed storage** — Encrypted at rest with minimal metadata.
+3. **Accountable access** — Emergency access that leaves receipts.
+
+### Six Principles
+
+| Principle | What It Means |
+|-----------|---------------|
+| Witness, not watcher | Support evidence without enabling surveillance |
+| Audit over trust | Cryptographic proofs outlast policies |
+| Exceptions leave fingerprints | Every emergency access is remembered |
+| Plan for rotation | Build migration paths from day one |
+| Local-first when possible | Minimize external dependencies |
+| Design for distrust | Make misuse architecturally difficult |
+
+---
+
+## Need Help?
+
+### New to GitHub?
+
+That's okay! Here's what the buttons do:
+- **Fork** = Copy this to your account
+- **Use this template** = Same thing, cleaner history
+- **Code → Download ZIP** = Get files without Git
+
+### New to Netlify?
+
+Read [`GETTING_STARTED.md`](GETTING_STARTED.md) — it walks you through everything with screenshots.
+
+### Something broken?
+
+Open an [issue](https://github.com/kmay89/SCQCS/issues). We'll help.
 
 ---
 
 ## Related Projects
 
-- [SecuraCV](https://securacv.netlify.app) — Privacy-preserving computer vision using SCQCS patterns
-- [GitHub](https://github.com/kmay89) — More projects and source code
-
-## Contributing
-
-Found an issue or have a suggestion? This project welcomes:
-- Bug reports for the website
-- Improvements to the security checklist
-- Suggestions for the framework documentation
-
-## License
-
-MIT License. See [LICENSE](LICENSE).
-
-The architectural patterns described may be implemented freely. Attribution appreciated but not required.
+- **[SecuraCV](https://securacv.netlify.app)** — Privacy-preserving computer vision using SCQCS patterns
+- **[More projects](https://github.com/kmay89)** — ERRERLabs open source work
 
 ---
 
-*Built with security and privacy as defaults, not afterthoughts.*
+## License
+
+**MIT License** — Use it, modify it, sell it, share it. No attribution required.
+
+The patterns described here may be implemented freely. We just ask that you build something good.
+
+---
+
+<p align="center">
+  <em>Built with security and privacy as defaults, not afterthoughts.</em>
+</p>
+
+<p align="center">
+  <a href="https://scqcs.com">scqcs.com</a>
+</p>
