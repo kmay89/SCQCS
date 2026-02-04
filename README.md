@@ -78,7 +78,8 @@ Everything you need. Nothing you don't.
 | `sitemap.xml` | Improves your SEO automatically |
 | `site.webmanifest` | Makes your site installable as an app |
 | `GETTING_STARTED.md` | Detailed walkthrough if you need more help |
-| `SITE_SECURITY_CHECKLIST.md` | Pre-launch checklist with authoritative sources |
+| `PREFLIGHT.md` | Quick runnable checks before every deploy |
+| `SITE_SECURITY_CHECKLIST.md` | Comprehensive security reference |
 
 ### Security You Get For Free
 

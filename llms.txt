@@ -76,7 +76,8 @@ Visit https://scqcs.com/#template for an interactive guide with step-by-step ins
 | `.well-known/security.txt` | RFC 9116 location | Same as security.txt |
 | `humans.txt` | Team transparency | Update for your org |
 | `site.webmanifest` | PWA manifest | Update name and colors |
-| `SITE_SECURITY_CHECKLIST.md` | Pre-launch checklist | Use as-is or customize |
+| `PREFLIGHT.md` | Quick pre-deploy checks | Run before every deploy |
+| `SITE_SECURITY_CHECKLIST.md` | Comprehensive security guide | Use as-is or customize |
 
 ### Quick Start Instructions
 1. Fork or clone `https://github.com/kmay89/SCQCS`

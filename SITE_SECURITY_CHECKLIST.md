@@ -408,6 +408,14 @@ This checklist is designed to be copied and modified. To adapt it for your proje
 
 ---
 
+## See Also
+
+- [`PREFLIGHT.md`](PREFLIGHT.md) - Quick runnable checks before every deploy
+- [`GETTING_STARTED.md`](GETTING_STARTED.md) - Step-by-step Netlify deployment guide
+- [`_headers`](_headers) - Security headers configuration
+
+---
+
 *Maintained by [ERRERLabs](https://github.com/kmay89). Contributions welcome.*
 
 *Free to use, modify, and redistribute. No attribution required.*
