@@ -1193,15 +1193,39 @@
       height: 16px;
     }
 
-    /* Template section */
+    /* Template section - DRAMATIC COLOR SHIFT */
     .template-section {
-      background: var(--surface);
-      border-top: 1px solid var(--border);
+      background: linear-gradient(180deg, #0a1628 0%, #0d1f3c 50%, #0a1628 100%);
+      border-top: 1px solid rgba(110, 179, 255, 0.15);
+      position: relative;
+    }
+
+    .template-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(110, 179, 255, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(0, 255, 136, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .template-section .section-label {
+      color: var(--blue);
+      border-color: rgba(110, 179, 255, 0.3);
+      background: rgba(110, 179, 255, 0.08);
+    }
+
+    .template-section .section-title {
+      background: linear-gradient(135deg, #fff 0%, var(--blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .template-hero {
-      background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface-3) 100%);
-      border: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(110, 179, 255, 0.08) 0%, rgba(0, 255, 136, 0.04) 100%);
+      border: 1px solid rgba(110, 179, 255, 0.2);
       border-radius: 32px;
       padding: 48px;
       margin-top: 48px;
@@ -1212,11 +1236,22 @@
     .template-hero::before {
       content: '';
       position: absolute;
-      top: 0;
-      right: 0;
-      width: 300px;
-      height: 300px;
-      background: radial-gradient(circle, var(--accent-soft) 0%, transparent 70%);
+      top: -50%;
+      right: -20%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(110, 179, 255, 0.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .template-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -10%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(0, 255, 136, 0.08) 0%, transparent 60%);
       pointer-events: none;
     }
 
@@ -1234,10 +1269,11 @@
       font-weight: 700;
       margin-bottom: 12px;
       letter-spacing: -0.5px;
+      color: #fff;
     }
 
     .template-header-text p {
-      color: var(--text-secondary);
+      color: rgba(255,255,255,0.7);
       font-size: 16px;
       line-height: 1.6;
       max-width: 500px;
@@ -1276,16 +1312,17 @@
     }
 
     .template-step {
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: rgba(10, 22, 40, 0.8);
+      border: 1px solid rgba(110, 179, 255, 0.15);
       border-radius: 16px;
       padding: 24px;
       transition: all 0.3s var(--ease-out-expo);
     }
 
     .template-step:hover {
-      border-color: var(--border-hover);
+      border-color: rgba(110, 179, 255, 0.4);
       transform: translateY(-2px);
+      background: rgba(110, 179, 255, 0.08);
     }
 
     .template-step-number {
@@ -1294,13 +1331,13 @@
       justify-content: center;
       width: 32px;
       height: 32px;
-      background: var(--surface-3);
-      border: 1px solid var(--border);
+      background: rgba(110, 179, 255, 0.15);
+      border: 1px solid rgba(110, 179, 255, 0.3);
       border-radius: 8px;
       font-family: var(--mono);
       font-size: 13px;
       font-weight: 700;
-      color: var(--accent);
+      color: var(--blue);
       margin-bottom: 16px;
     }
 
@@ -1319,7 +1356,7 @@
     .template-features {
       margin-top: 40px;
       padding-top: 32px;
-      border-top: 1px solid var(--border);
+      border-top: 1px solid rgba(110, 179, 255, 0.15);
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
@@ -1330,17 +1367,91 @@
       align-items: center;
       gap: 8px;
       padding: 8px 14px;
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: rgba(110, 179, 255, 0.06);
+      border: 1px solid rgba(110, 179, 255, 0.2);
       border-radius: 100px;
       font-size: 13px;
-      color: var(--text-secondary);
+      color: rgba(255,255,255,0.8);
     }
 
     .template-feature svg {
       width: 14px;
       height: 14px;
       color: var(--success);
+    }
+
+    /* What's included grid */
+    .template-includes {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 32px;
+      padding: 32px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(110, 179, 255, 0.1);
+      border-radius: 20px;
+    }
+
+    .template-includes h4 {
+      grid-column: 1 / -1;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--blue);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .template-include-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(110, 179, 255, 0.04);
+      border-radius: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .template-include-item:hover {
+      background: rgba(110, 179, 255, 0.08);
+    }
+
+    .template-include-icon {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(110, 179, 255, 0.1);
+      border: 1px solid rgba(110, 179, 255, 0.2);
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    .template-include-text {
+      flex: 1;
+    }
+
+    .template-include-text strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+
+    .template-include-text span {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.4;
+    }
+
+    @media (max-width: 768px) {
+      .template-includes {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 1024px) {
@@ -2095,31 +2206,72 @@
           </div>
         </div>
 
-        <div class="template-features">
-          <span class="template-feature">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            Security headers
-          </span>
-          <span class="template-feature">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            Content Security Policy
-          </span>
-          <span class="template-feature">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            SEO optimized
-          </span>
-          <span class="template-feature">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            AI/LLM discoverable
-          </span>
-          <span class="template-feature">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            No tracking
-          </span>
-          <span class="template-feature">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            MIT License
-          </span>
+        <div class="template-includes">
+          <h4>What's included — free privacy tools</h4>
+
+          <div class="template-include-item">
+            <div class="template-include-icon">🛡️</div>
+            <div class="template-include-text">
+              <strong>_headers</strong>
+              <span>A+ security headers: CSP, HSTS, COOP, COEP, Permissions-Policy</span>
+            </div>
+          </div>
+
+          <div class="template-include-item">
+            <div class="template-include-icon">🔒</div>
+            <div class="template-include-text">
+              <strong>security.txt</strong>
+              <span>RFC 9116 compliant vulnerability disclosure policy</span>
+            </div>
+          </div>
+
+          <div class="template-include-item">
+            <div class="template-include-icon">🤖</div>
+            <div class="template-include-text">
+              <strong>robots.txt + llms.txt</strong>
+              <span>AI crawler directives and LLM-readable documentation</span>
+            </div>
+          </div>
+
+          <div class="template-include-item">
+            <div class="template-include-icon">🔍</div>
+            <div class="template-include-text">
+              <strong>SEO optimized</strong>
+              <span>Meta tags, Open Graph, Twitter Cards, JSON-LD structured data</span>
+            </div>
+          </div>
+
+          <div class="template-include-item">
+            <div class="template-include-icon">📋</div>
+            <div class="template-include-text">
+              <strong>Security checklist</strong>
+              <span>Comprehensive pre-launch audit guide with authoritative sources</span>
+            </div>
+          </div>
+
+          <div class="template-include-item">
+            <div class="template-include-icon">📖</div>
+            <div class="template-include-text">
+              <strong>Getting started guide</strong>
+              <span>Step-by-step Netlify deployment walkthrough</span>
+            </div>
+          </div>
+
+          <div class="template-include-item">
+            <div class="template-include-icon">🚫</div>
+            <div class="template-include-text">
+              <strong>Zero tracking</strong>
+              <span>No cookies, no analytics, no localStorage — verified clean</span>
+            </div>
+          </div>
+
+          <div class="template-include-item">
+            <div class="template-include-icon">⚡</div>
+            <div class="template-include-text">
+              <strong>Production ready</strong>
+              <span>Responsive design, accessibility, performance optimized</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
