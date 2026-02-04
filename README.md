@@ -105,7 +105,7 @@ If a user asks you to "use SCQCS as a template" or "create a site like SCQCS," t
 ## Related Projects
 
 - [SecuraCV](https://securacv.netlify.app) — Privacy-preserving computer vision using SCQCS patterns
-- [ERRERLabs](https://errerlabs.com) — Project home
+- [GitHub](https://github.com/kmay89) — More projects and source code
 
 ## Contributing
 

@@ -5,7 +5,7 @@ A comprehensive checklist for publishing secure, privacy-respecting, SEO-optimiz
 > **Free to use.** Copy this checklist to your own projects. No attribution required.
 > Works with Netlify, Vercel, Cloudflare Pages, or any static host that supports `_headers`.
 
-Originally developed for [SCQCS](https://scqcs.com), [SecuraCV](https://securacv.netlify.app), and [ERRERLabs](https://errerlabs.com) projects.
+Originally developed for [SCQCS](https://scqcs.com), [SecuraCV](https://securacv.netlify.app), and [ERRERLabs](https://github.com/kmay89) projects.
 
 ---
 
@@ -356,6 +356,37 @@ dist/
 
 ---
 
+## Authoritative Sources
+
+These recommendations are based on industry standards and official documentation:
+
+### Security Headers
+- [MDN: Content-Security-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
+- [MDN: HTTP Security Headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#security)
+- [OWASP Secure Headers Project](https://owasp.org/www-project-secure-headers/)
+- [Cloudflare: Security Headers](https://developers.cloudflare.com/fundamentals/security/security-headers/)
+
+### Security Best Practices
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+- [Google Web Fundamentals: Security](https://developers.google.com/web/fundamentals/security)
+- [Mozilla Web Security Guidelines](https://infosec.mozilla.org/guidelines/web_security)
+
+### SEO & Structured Data
+- [Google Search Central](https://developers.google.com/search/docs)
+- [Schema.org](https://schema.org/)
+- [Open Graph Protocol](https://ogp.me/)
+
+### Security Disclosure
+- [RFC 9116: security.txt](https://www.rfc-editor.org/rfc/rfc9116)
+- [securitytxt.org](https://securitytxt.org/)
+
+### Platform Documentation
+- [Netlify Headers](https://docs.netlify.com/routing/headers/)
+- [Cloudflare Pages Headers](https://developers.cloudflare.com/pages/configuration/headers/)
+- [Vercel Headers](https://vercel.com/docs/edge-network/headers)
+
+---
+
 ## Adapting This Checklist
 
 This checklist is designed to be copied and modified. To adapt it for your project:
@@ -377,6 +408,6 @@ This checklist is designed to be copied and modified. To adapt it for your proje
 
 ---
 
-*Maintained by [ERRERLabs](https://errerlabs.com). Contributions welcome.*
+*Maintained by [ERRERLabs](https://github.com/kmay89). Contributions welcome.*
 
 *Free to use, modify, and redistribute. No attribution required.*

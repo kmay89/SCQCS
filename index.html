@@ -40,7 +40,7 @@
     "author": {
       "@type": "Organization",
       "name": "ERRERLabs",
-      "url": "https://errerlabs.com"
+      "url": "https://github.com/kmay89"
     },
     "isAccessibleForFree": true,
     "license": "https://scqcs.com/#legal",
@@ -60,7 +60,7 @@
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "ERRERLabs",
-    "url": "https://errerlabs.com",
+    "url": "https://github.com/kmay89",
     "logo": "https://scqcs.com/android-chrome-512x512.png",
     "sameAs": [],
     "knowsAbout": ["Cryptography", "Privacy", "Security Architecture", "Zero-Trust Systems"]
@@ -125,6 +125,71 @@
       --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
       --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
       --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+      /* Quantum color shift - subtle RGB awareness */
+      --quantum-hue: 0deg;
+    }
+
+    /* Quantum shimmer - a gentle prismatic wave across the page */
+    @keyframes quantumShift {
+      0% { --quantum-hue: 0deg; }
+      100% { --quantum-hue: 360deg; }
+    }
+
+    @property --quantum-hue {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: true;
+    }
+
+    html {
+      animation: quantumShift 60s linear infinite;
+    }
+
+    /* Apply subtle quantum tint to key elements */
+    .quantum-touch {
+      position: relative;
+    }
+
+    .quantum-touch::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        calc(45deg + var(--quantum-hue)),
+        hsla(calc(0 + var(--quantum-hue)), 70%, 60%, 0.02),
+        hsla(calc(120 + var(--quantum-hue)), 70%, 60%, 0.015),
+        hsla(calc(240 + var(--quantum-hue)), 70%, 60%, 0.02)
+      );
+      pointer-events: none;
+      border-radius: inherit;
+      mix-blend-mode: overlay;
+    }
+
+    /* Quantum border glow for cards */
+    .quantum-border {
+      position: relative;
+    }
+
+    .quantum-border::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      background: linear-gradient(
+        calc(90deg + var(--quantum-hue)),
+        hsla(calc(0 + var(--quantum-hue)), 80%, 65%, 0.08),
+        hsla(calc(60 + var(--quantum-hue)), 80%, 65%, 0.04),
+        hsla(calc(180 + var(--quantum-hue)), 80%, 65%, 0.08),
+        hsla(calc(300 + var(--quantum-hue)), 80%, 65%, 0.04)
+      );
+      border-radius: inherit;
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .quantum-border:hover::before {
+      opacity: 1;
     }
 
     *, *::before, *::after {
@@ -142,6 +207,18 @@
       background: var(--black);
       color: var(--text);
       line-height: 1.6;
+      /* Quantum page wash - barely perceptible color life */
+      background-image:
+        radial-gradient(
+          ellipse 100% 100% at 50% 0%,
+          hsla(calc(var(--quantum-hue)), 60%, 50%, 0.008) 0%,
+          transparent 50%
+        ),
+        radial-gradient(
+          ellipse 80% 80% at 80% 80%,
+          hsla(calc(120 + var(--quantum-hue)), 60%, 50%, 0.006) 0%,
+          transparent 50%
+        );
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       overflow-x: hidden;
@@ -1720,17 +1797,17 @@
       </div>
       
       <div class="patterns-grid">
-        <div class="pattern-card reveal interactive" data-sound="hover">
+        <div class="pattern-card reveal interactive quantum-border" data-sound="hover">
           <div class="pattern-icon">📜</div>
           <h3 class="pattern-title">Append-only logging</h3>
           <p class="pattern-text">Events chain forward cryptographically. Modifications become detectable. Deletions become evident. History becomes verifiable.</p>
         </div>
-        <div class="pattern-card reveal reveal-delay-1 interactive" data-sound="hover">
+        <div class="pattern-card reveal reveal-delay-1 interactive quantum-border" data-sound="hover">
           <div class="pattern-icon">🔐</div>
           <h3 class="pattern-title">Sealed storage</h3>
           <p class="pattern-text">Data encrypted at rest with minimal metadata exposure. Designed for retention without sprawl, access without surveillance.</p>
         </div>
-        <div class="pattern-card reveal reveal-delay-2 interactive" data-sound="hover">
+        <div class="pattern-card reveal reveal-delay-2 interactive quantum-border" data-sound="hover">
           <div class="pattern-icon">🚨</div>
           <h3 class="pattern-title">Accountable access</h3>
           <p class="pattern-text">Emergency access patterns that are scoped, logged, and attributable. Exceptions exist—but they leave durable, tamper-evident receipts.</p>
@@ -1749,7 +1826,7 @@
       </p>
       
       <div class="principles-grid">
-        <div class="principle-card reveal interactive" data-sound="hover">
+        <div class="principle-card reveal interactive quantum-border" data-sound="hover">
           <span class="principle-number">01</span>
           <h3 class="principle-title">Witness, not watcher</h3>
           <p class="principle-text">Support evidence without enabling surveillance. Default to data minimization. Resist scope creep and retroactive expansion.</p>
@@ -1759,7 +1836,7 @@
           </div>
         </div>
         
-        <div class="principle-card reveal reveal-delay-1 interactive" data-sound="hover">
+        <div class="principle-card reveal reveal-delay-1 interactive quantum-border" data-sound="hover">
           <span class="principle-number">02</span>
           <h3 class="principle-title">Audit over trust</h3>
           <p class="principle-text">Prefer verifiable integrity over promises. Cryptographic proofs are more durable than policies, contracts, or good intentions.</p>
@@ -1769,7 +1846,7 @@
           </div>
         </div>
         
-        <div class="principle-card reveal reveal-delay-2 interactive" data-sound="hover">
+        <div class="principle-card reveal reveal-delay-2 interactive quantum-border" data-sound="hover">
           <span class="principle-number">03</span>
           <h3 class="principle-title">Exceptions leave scars</h3>
           <p class="principle-text">Break-glass access may be necessary—but it should be hard to trigger casually and designed to prevent silent invocation.</p>
@@ -1779,7 +1856,7 @@
           </div>
         </div>
         
-        <div class="principle-card reveal reveal-delay-3 interactive" data-sound="hover">
+        <div class="principle-card reveal reveal-delay-3 interactive quantum-border" data-sound="hover">
           <span class="principle-number">04</span>
           <h3 class="principle-title">Plan for rotation</h3>
           <p class="principle-text">Algorithms weaken. Keys get compromised. Design for migration from day one. Crypto agility isn't optional.</p>
@@ -1789,7 +1866,7 @@
           </div>
         </div>
         
-        <div class="principle-card reveal reveal-delay-4 interactive" data-sound="hover">
+        <div class="principle-card reveal reveal-delay-4 interactive quantum-border" data-sound="hover">
           <span class="principle-number">05</span>
           <h3 class="principle-title">Local-first when possible</h3>
           <p class="principle-text">External dependencies are attack surface. Prefer architectures that survive without vendor clouds and require explicit egress.</p>
@@ -1799,7 +1876,7 @@
           </div>
         </div>
         
-        <div class="principle-card reveal interactive" data-sound="hover">
+        <div class="principle-card reveal interactive quantum-border" data-sound="hover">
           <span class="principle-number">06</span>
           <h3 class="principle-title">Assume adversarial insiders</h3>
           <p class="principle-text">The threat model includes administrators, developers, and operators. Make misuse architecturally difficult, not just policy-prohibited.</p>
@@ -1919,7 +1996,7 @@
       </p>
       
       <div class="ecosystem-grid">
-        <div class="ecosystem-card reveal interactive" data-sound="hover">
+        <div class="ecosystem-card reveal interactive quantum-border" data-sound="hover">
           <div class="ecosystem-icon">👁️</div>
           <h3>SecuraCV</h3>
           <p>A privacy-preserving computer vision framework that outputs semantic events instead of storing video. Uses SCQCS patterns for its witness kernel and vault architecture.</p>
@@ -1931,19 +2008,19 @@
           </a>
         </div>
         
-        <div class="ecosystem-card reveal reveal-delay-1 interactive" data-sound="hover">
+        <div class="ecosystem-card reveal reveal-delay-1 interactive quantum-border" data-sound="hover">
           <div class="ecosystem-icon">🔬</div>
-          <h3>ERRERLabs</h3>
-          <p>The research and development home for SCQCS and related privacy-preserving technologies. Exploring the intersection of security, privacy, and practical usability.</p>
-          <a href="https://errerlabs.com" class="ecosystem-link" target="_blank" rel="noopener noreferrer" data-sound="click">
-            Visit ERRERLabs
+          <h3>Open Source</h3>
+          <p>SCQCS patterns and implementations are developed in the open. Explore the code, contribute improvements, or fork for your own projects.</p>
+          <a href="https://github.com/kmay89" class="ecosystem-link" target="_blank" rel="noopener noreferrer" data-sound="click">
+            View on GitHub
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M7 17L17 7M7 7h10v10"/>
             </svg>
           </a>
         </div>
         
-        <div class="ecosystem-card reveal reveal-delay-2 interactive" id="contact" data-sound="hover">
+        <div class="ecosystem-card reveal reveal-delay-2 interactive quantum-border" id="contact" data-sound="hover">
           <div class="ecosystem-icon">💬</div>
           <h3>Get involved</h3>
           <p>Interested in applying SCQCS patterns to your work? Building something that needs accountable privacy? Contact channels coming soon.</p>
@@ -1979,22 +2056,22 @@
         </div>
 
         <div class="template-steps">
-          <div class="template-step interactive" data-sound="hover">
+          <div class="template-step interactive quantum-border" data-sound="hover">
             <div class="template-step-number">1</div>
             <h4>Fork the repo</h4>
             <p>Clone or fork from GitHub to get all files and configurations.</p>
           </div>
-          <div class="template-step interactive" data-sound="hover">
+          <div class="template-step interactive quantum-border" data-sound="hover">
             <div class="template-step-number">2</div>
             <h4>Customize content</h4>
             <p>Replace scqcs.com with your domain throughout all files.</p>
           </div>
-          <div class="template-step interactive" data-sound="hover">
+          <div class="template-step interactive quantum-border" data-sound="hover">
             <div class="template-step-number">3</div>
             <h4>Update security.txt</h4>
             <p>Add your security contact info and policy links.</p>
           </div>
-          <div class="template-step interactive" data-sound="hover">
+          <div class="template-step interactive quantum-border" data-sound="hover">
             <div class="template-step-number">4</div>
             <h4>Deploy to Netlify</h4>
             <p>Connect to Netlify for free HTTPS, CDN, and automatic deploys.</p>
@@ -2141,9 +2218,8 @@
         <h4>Ecosystem</h4>
         <ul class="footer-links">
           <li><a href="https://securacv.netlify.app" target="_blank" rel="noopener noreferrer" data-sound="click">SecuraCV</a></li>
-          <li><a href="https://errerlabs.com" target="_blank" rel="noopener noreferrer" data-sound="click">ERRERLabs</a></li>
-          <li><a href="#template" data-sound="click">Use Template</a></li>
           <li><a href="https://github.com/kmay89/SCQCS" target="_blank" rel="noopener noreferrer" data-sound="click">GitHub</a></li>
+          <li><a href="#template" data-sound="click">Use Template</a></li>
         </ul>
       </div>
       
