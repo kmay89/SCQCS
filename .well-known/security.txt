@@ -1,0 +1,34 @@
+# Security Policy for scqcs.com
+# https://securitytxt.org/
+
+# Contact information coming soon
+# Contact: mailto:security@errerlabs.com
+
+# This security.txt is valid until
+Expires: 2027-02-04T00:00:00.000Z
+
+# Our security policy
+Policy: https://scqcs.com/#legal
+
+# Preferred languages
+Preferred-Languages: en
+
+# Canonical location of this file
+Canonical: https://scqcs.com/.well-known/security.txt
+
+# Acknowledgments page (coming soon)
+# Acknowledgments: https://scqcs.com/security-acknowledgments
+
+# ---
+# SCQCS Security Stance
+# ---
+# This site is static documentation only. It does not process user data,
+# store credentials, or execute server-side code. The SCQCS framework
+# itself defines security patterns - implementations are separate.
+#
+# If you discover a security issue with this documentation site or
+# have concerns about the framework documentation, we want to hear
+# about it. Contact channels are being established.
+#
+# We practice what we preach: transparency, accountability, and
+# minimal attack surface.

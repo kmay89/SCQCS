@@ -1,0 +1,31 @@
+/* TEAM */
+Organization: ERRERLabs
+Site: https://errerlabs.com
+Location: Earth
+
+/* THANKS */
+Name: The security and privacy research community
+
+/* SITE */
+Last update: 2026-02-04
+Language: English
+Doctype: HTML5
+Framework: SCQCS (our own patterns)
+Standards: HTML5, CSS3, ES6+, Schema.org, security.txt
+IDE: Various
+Software: Static site, no server-side processing
+
+/* SECURITY PHILOSOPHY */
+This site practices what it preaches:
+- Minimal data collection (none)
+- No cookies, no analytics, no tracking
+- Static content only - minimal attack surface
+- Security headers configured
+- Content Security Policy enforced
+- All resources served over HTTPS
+- Subresource integrity where applicable
+- Regular security review
+
+/* LICENSE */
+Patterns described may be implemented freely.
+Attribution appreciated but not required.

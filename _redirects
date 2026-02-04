@@ -1,0 +1,7 @@
+# Netlify redirects for scqcs.com
+
+# Ensure security.txt is accessible at both locations
+/security.txt /.well-known/security.txt 200
+
+# Clean URLs (optional, Netlify does this by default)
+# /index.html / 301
