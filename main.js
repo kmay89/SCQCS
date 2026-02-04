@@ -5,13 +5,14 @@
  */
 
 // ========================================
-// Sound System - Subtle UI feedback
+// Sound System - Friendly haptic UI feedback
+// Warm, cute, satisfying sounds like pressing a quality button
 // Uses event delegation for efficiency
 // ========================================
 const SoundSystem = {
   ctx: null,
   enabled: true,
-  volume: 0.025,
+  volume: 0.035,
 
   init() {
     document.addEventListener('click', () => {
@@ -24,42 +25,96 @@ const SoundSystem = {
   play(type) {
     if (!this.ctx || !this.enabled) return;
 
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-
     const now = this.ctx.currentTime;
 
     switch(type) {
-      case 'click':
-        osc.frequency.setValueAtTime(800, now);
-        osc.frequency.exponentialRampToValueAtTime(600, now + 0.05);
-        gain.gain.setValueAtTime(this.volume, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-        osc.start(now);
-        osc.stop(now + 0.08);
-        break;
+      case 'click': {
+        // Warm, satisfying haptic pop - like pressing a quality mechanical button
+        // Two layered tones create richness: fundamental + soft harmonic
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+        const gain1 = this.ctx.createGain();
+        const gain2 = this.ctx.createGain();
 
-      case 'hover':
-        osc.frequency.setValueAtTime(1200, now);
-        osc.frequency.exponentialRampToValueAtTime(1000, now + 0.03);
-        gain.gain.setValueAtTime(this.volume * 0.4, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-        osc.start(now);
-        osc.stop(now + 0.05);
-        break;
+        osc1.connect(gain1);
+        osc2.connect(gain2);
+        gain1.connect(this.ctx.destination);
+        gain2.connect(this.ctx.destination);
 
-      case 'drawer':
+        // Primary tone - warm pop with satisfying pitch drop
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(520, now);
+        osc1.frequency.exponentialRampToValueAtTime(340, now + 0.06);
+        gain1.gain.setValueAtTime(this.volume, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+
+        // Harmonic layer - adds "click" presence without harshness
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(880, now);
+        osc2.frequency.exponentialRampToValueAtTime(660, now + 0.04);
+        gain2.gain.setValueAtTime(this.volume * 0.25, now);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 0.07);
+        osc2.stop(now + 0.05);
+        break;
+      }
+
+      case 'hover': {
+        // Soft, gentle brush - barely there but pleasant
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(400, now);
-        osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
-        gain.gain.setValueAtTime(this.volume, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc.frequency.setValueAtTime(680, now);
+        osc.frequency.exponentialRampToValueAtTime(580, now + 0.035);
+        gain.gain.setValueAtTime(this.volume * 0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
         osc.start(now);
-        osc.stop(now + 0.15);
+        osc.stop(now + 0.04);
         break;
+      }
+
+      case 'drawer': {
+        // Gentle reveal chime - warm and welcoming
+        // Two notes in harmony for a pleasant "opening" feel
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+        const gain1 = this.ctx.createGain();
+        const gain2 = this.ctx.createGain();
+
+        osc1.connect(gain1);
+        osc2.connect(gain2);
+        gain1.connect(this.ctx.destination);
+        gain2.connect(this.ctx.destination);
+
+        // Base tone - warm ascending note
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(380, now);
+        osc1.frequency.exponentialRampToValueAtTime(480, now + 0.12);
+        gain1.gain.setValueAtTime(this.volume * 0.8, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+        // Harmony - soft fifth above, slightly delayed
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(570, now + 0.02);
+        osc2.frequency.exponentialRampToValueAtTime(720, now + 0.14);
+        gain2.gain.setValueAtTime(0, now);
+        gain2.gain.setValueAtTime(this.volume * 0.4, now + 0.02);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 0.15);
+        osc2.stop(now + 0.16);
+        break;
+      }
     }
   }
 };
