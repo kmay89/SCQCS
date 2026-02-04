@@ -1,10 +1,12 @@
 /**
  * SCQCS Site Scripts
  * Privacy-first security framework documentation
+ * Optimized for runtime performance across browsers
  */
 
 // ========================================
 // Sound System - Subtle UI feedback
+// Uses event delegation for efficiency
 // ========================================
 const SoundSystem = {
   ctx: null,
@@ -237,35 +239,47 @@ if (document.readyState === 'loading') {
 }
 
 // ========================================
-// Attach sound events
+// Event Delegation - Single listeners for better performance
+// Replaces multiple querySelectorAll().forEach() patterns
 // ========================================
-document.querySelectorAll('[data-sound="click"]').forEach(el => {
-  el.addEventListener('click', () => SoundSystem.play('click'));
-});
 
-document.querySelectorAll('[data-sound="hover"]').forEach(el => {
-  el.addEventListener('mouseenter', () => SoundSystem.play('hover'));
-});
+// Delegated sound events - single listener per event type instead of many
+document.addEventListener('click', (e) => {
+  const target = e.target.closest('[data-sound="click"]');
+  if (target) SoundSystem.play('click');
+}, { passive: true });
 
-document.querySelectorAll('[data-sound="drawer"]').forEach(el => {
-  el.addEventListener('toggle', () => SoundSystem.play('drawer'));
-});
+document.addEventListener('mouseenter', (e) => {
+  const target = e.target.closest('[data-sound="hover"]');
+  if (target) SoundSystem.play('hover');
+}, { capture: true, passive: true });
+
+document.addEventListener('toggle', (e) => {
+  if (e.target.matches('[data-sound="drawer"]')) {
+    SoundSystem.play('drawer');
+  }
+}, { capture: true, passive: true });
 
 // ========================================
-// Set year
+// Set year - cached DOM references
 // ========================================
+const yearEl = document.getElementById('year');
+const footerYearEl = document.getElementById('footer-year');
 const year = new Date().getFullYear();
-document.getElementById('year').textContent = year;
-document.getElementById('footer-year').textContent = year;
+if (yearEl) yearEl.textContent = year;
+if (footerYearEl) footerYearEl.textContent = year;
 
 // ========================================
 // Navigation scroll effect (optimized with rAF)
+// Removed backgroundPosition for better performance
 // ========================================
 const nav = document.getElementById('nav');
 const scrollProgress = document.getElementById('scroll-progress');
 
 let ticking = false;
 let lastScrollY = 0;
+// Cache scroll height calculation - recalculate only on resize
+let cachedScrollHeight = document.documentElement.scrollHeight - window.innerHeight;
 
 function updateScroll() {
   const scrollY = lastScrollY;
@@ -277,13 +291,10 @@ function updateScroll() {
     nav.classList.remove('scrolled');
   }
 
-  // Scroll progress bar - using transform for GPU acceleration
-  const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const scrollPercent = scrollHeight > 0 ? scrollY / scrollHeight : 0;
-
-  // Use transform for instant, GPU-accelerated updates
+  // Scroll progress bar - using transform only for GPU acceleration
+  // Removed backgroundPosition to avoid repaints
+  const scrollPercent = cachedScrollHeight > 0 ? scrollY / cachedScrollHeight : 0;
   scrollProgress.style.transform = `scaleX(${scrollPercent})`;
-  scrollProgress.style.backgroundPosition = `${scrollPercent * 100}% 0`;
 
   ticking = false;
 }
@@ -297,8 +308,17 @@ window.addEventListener('scroll', () => {
   }
 }, { passive: true });
 
+// Update cached scroll height on resize (debounced)
+let resizeTimeout;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    cachedScrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+  }, 150);
+}, { passive: true });
+
 // ========================================
-// Scroll reveal animation
+// Scroll reveal animation - optimized observer
 // ========================================
 const observerOptions = {
   root: null,
@@ -306,58 +326,76 @@ const observerOptions = {
   threshold: 0.1
 };
 
-const observer = new IntersectionObserver((entries) => {
+const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       entry.target.classList.add('visible');
+      // Unobserve after reveal to free resources
+      revealObserver.unobserve(entry.target);
     }
   });
 }, observerOptions);
 
 document.querySelectorAll('.reveal').forEach(el => {
-  observer.observe(el);
+  revealObserver.observe(el);
 });
 
 // ========================================
-// Smooth scroll for anchor links
+// Smooth scroll - event delegation for anchor links
 // ========================================
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function (e) {
+document.addEventListener('click', (e) => {
+  const anchor = e.target.closest('a[href^="#"]');
+  if (!anchor) return;
+
+  const href = anchor.getAttribute('href');
+  if (!href || href === '#') return;
+
+  const target = document.querySelector(href);
+  if (target) {
     e.preventDefault();
-    const target = document.querySelector(this.getAttribute('href'));
-    if (target) {
-      target.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }
-  });
+    target.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }
 });
 
 // ========================================
 // Scroll indicator click
 // ========================================
-document.querySelector('.scroll-indicator').addEventListener('click', () => {
-  document.querySelector('#what').scrollIntoView({ behavior: 'smooth' });
-});
+const scrollIndicator = document.querySelector('.scroll-indicator');
+if (scrollIndicator) {
+  scrollIndicator.addEventListener('click', () => {
+    const target = document.querySelector('#what');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, { passive: true });
+}
 
 // ========================================
-// Copy prompt to clipboard
+// Copy prompt to clipboard - optimized
 // ========================================
+
+// Cache LLM items once at load time
+const llmItems = document.querySelectorAll('.ai-prompt-llm-item');
+const animationDuration = 8000; // 8 seconds
+
+// Keyframes matching the CSS animation `rotate-llm`
+const keyframes = [
+  { start: 0.75, index: 3 }, // 75-95%
+  { start: 0.50, index: 2 }, // 50-70%
+  { start: 0.25, index: 1 }, // 25-45%
+  { start: 0.00, index: 0 }  // 0-20%
+];
+
+// Reusable textarea for clipboard fallback (lazy created)
+let fallbackTextarea = null;
+
 function copyPrompt(button) {
   // Get the currently visible LLM name based on animation timing
-  const llmItems = document.querySelectorAll('.ai-prompt-llm-item');
-  const animationDuration = 8000; // 8 seconds
-  const now = Date.now();
-  const animationProgress = (now % animationDuration) / animationDuration;
+  const animationProgress = (Date.now() % animationDuration) / animationDuration;
 
-  // Keyframes matching the CSS animation `rotate-llm`
-  const keyframes = [
-    { start: 0.75, index: 3 }, // 75-95%
-    { start: 0.50, index: 2 }, // 50-70%
-    { start: 0.25, index: 1 }, // 25-45%
-    { start: 0.00, index: 0 }  // 0-20%
-  ];
   const currentKeyframe = keyframes.find(kf => animationProgress >= kf.start);
   const currentIndex = currentKeyframe ? currentKeyframe.index : 0;
 
@@ -366,32 +404,43 @@ function copyPrompt(button) {
   // Build the full prompt
   const prompt = `${currentLLM}, use github.com/kmay89/SCQCS to build me a site about `;
 
-  navigator.clipboard.writeText(prompt).then(() => {
+  const showCopied = () => {
     button.classList.add('copied');
-
-    // Reset after 2 seconds
     setTimeout(() => {
       button.classList.remove('copied');
     }, 2000);
-  }).catch(err => {
-    // Fallback for older browsers
-    const textarea = document.createElement('textarea');
-    textarea.value = prompt;
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.select();
+  };
+
+  navigator.clipboard.writeText(prompt).then(showCopied).catch(() => {
+    // Fallback for older browsers - reuse textarea
+    if (!fallbackTextarea) {
+      fallbackTextarea = document.createElement('textarea');
+      fallbackTextarea.style.cssText = 'position:fixed;opacity:0;pointer-events:none;';
+      fallbackTextarea.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(fallbackTextarea);
+    }
+
+    fallbackTextarea.value = prompt;
+    fallbackTextarea.select();
     document.execCommand('copy');
-    document.body.removeChild(textarea);
-
-    button.classList.add('copied');
-    setTimeout(() => {
-      button.classList.remove('copied');
-    }, 2000);
+    showCopied();
   });
 }
 
-// Attach event listeners to copy buttons
-document.querySelectorAll('.ai-prompt-copy').forEach(button => {
-  button.addEventListener('click', () => copyPrompt(button));
+// Event delegation for copy buttons
+document.addEventListener('click', (e) => {
+  const button = e.target.closest('.ai-prompt-copy');
+  if (button) copyPrompt(button);
+});
+
+// ========================================
+// Animation pause when page not visible
+// Saves battery by pausing CSS animations
+// ========================================
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    document.documentElement.style.animationPlayState = 'paused';
+  } else {
+    document.documentElement.style.animationPlayState = 'running';
+  }
 });

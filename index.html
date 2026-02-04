@@ -96,13 +96,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="dns-prefetch" href="https://fonts.googleapis.com">
   <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+  <!-- Font preload for better loading performance (replaces @import) -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"></noscript>
 
   <!-- Transparency -->
   <link rel="author" href="humans.txt">
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-    
+    /* Font loaded via preload link in head for better performance */
+
     :root {
       --black: #000000;
       --surface: #0a0a0a;
@@ -239,11 +242,13 @@
       opacity: 0;
       transform: translateY(40px);
       transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
+      will-change: opacity, transform;
     }
-    
+
     .reveal.visible {
       opacity: 1;
       transform: translateY(0);
+      will-change: auto; /* Release GPU memory after animation */
     }
 
     .reveal-delay-1 { transition-delay: 0.1s; }
@@ -723,6 +728,7 @@
       max-width: 700px;
       margin: 0 auto;
       animation: hero-prompt-float 6s ease-in-out infinite;
+      will-change: transform;
     }
 
     @keyframes hero-prompt-float {
@@ -858,6 +864,7 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 2;
+      will-change: transform;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -2741,7 +2748,7 @@
           </p>
         </div>
         <div class="what-visual reveal reveal-delay-1">
-          <img src="android-chrome-512x512.png" alt="SCQCS Canary - The Witness">
+          <img src="android-chrome-512x512.png" alt="SCQCS Canary - The Witness" loading="lazy" decoding="async">
         </div>
       </div>
     </div>
