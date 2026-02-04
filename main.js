@@ -90,13 +90,23 @@ document.getElementById('footer-year').textContent = year;
 // Navigation scroll effect
 // ========================================
 const nav = document.getElementById('nav');
+const scrollProgress = document.getElementById('scroll-progress');
 
 window.addEventListener('scroll', () => {
+  // Nav background
   if (window.pageYOffset > 50) {
     nav.classList.add('scrolled');
   } else {
     nav.classList.remove('scrolled');
   }
+
+  // Scroll progress bar
+  const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const scrollPercent = (window.pageYOffset / scrollHeight) * 100;
+  scrollProgress.style.width = scrollPercent + '%';
+
+  // Shift gradient position based on scroll for color transition
+  scrollProgress.style.backgroundPosition = scrollPercent + '% 0';
 }, { passive: true });
 
 // ========================================
