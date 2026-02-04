@@ -87,26 +87,42 @@ document.getElementById('year').textContent = year;
 document.getElementById('footer-year').textContent = year;
 
 // ========================================
-// Navigation scroll effect
+// Navigation scroll effect (optimized with rAF)
 // ========================================
 const nav = document.getElementById('nav');
 const scrollProgress = document.getElementById('scroll-progress');
 
-window.addEventListener('scroll', () => {
+let ticking = false;
+let lastScrollY = 0;
+
+function updateScroll() {
+  const scrollY = lastScrollY;
+
   // Nav background
-  if (window.pageYOffset > 50) {
+  if (scrollY > 50) {
     nav.classList.add('scrolled');
   } else {
     nav.classList.remove('scrolled');
   }
 
-  // Scroll progress bar
+  // Scroll progress bar - using transform for GPU acceleration
   const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const scrollPercent = (window.pageYOffset / scrollHeight) * 100;
-  scrollProgress.style.width = scrollPercent + '%';
+  const scrollPercent = scrollHeight > 0 ? scrollY / scrollHeight : 0;
 
-  // Shift gradient position based on scroll for color transition
-  scrollProgress.style.backgroundPosition = scrollPercent + '% 0';
+  // Use transform for instant, GPU-accelerated updates
+  scrollProgress.style.transform = `scaleX(${scrollPercent})`;
+  scrollProgress.style.backgroundPosition = `${scrollPercent * 100}% 0`;
+
+  ticking = false;
+}
+
+window.addEventListener('scroll', () => {
+  lastScrollY = window.scrollY;
+
+  if (!ticking) {
+    requestAnimationFrame(updateScroll);
+    ticking = true;
+  }
 }, { passive: true });
 
 // ========================================

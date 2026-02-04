@@ -277,13 +277,13 @@
       border-bottom: 1px solid var(--border);
     }
 
-    /* Scroll progress bar */
+    /* Scroll progress bar - uses transform for GPU acceleration */
     .scroll-progress {
       position: absolute;
       bottom: 0;
       left: 0;
       height: 2px;
-      width: 0%;
+      width: 100%;
       background: linear-gradient(
         90deg,
         var(--accent) 0%,
@@ -292,13 +292,14 @@
         var(--accent) 100%
       );
       background-size: 300% 100%;
-      transition: width 0.1s ease-out;
+      transform-origin: left;
+      transform: scaleX(0);
+      will-change: transform;
       z-index: 101;
     }
 
     nav.scrolled .scroll-progress {
-      height: 2px;
-      box-shadow: 0 0 10px currentColor;
+      box-shadow: 0 0 8px var(--accent);
     }
 
     .nav-inner {
