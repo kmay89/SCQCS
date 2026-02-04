@@ -1432,9 +1432,51 @@
       font-style: italic;
     }
 
+    .ai-prompt-copy {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: rgba(110, 179, 255, 0.1);
+      border: 1px solid rgba(110, 179, 255, 0.2);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .ai-prompt-copy:hover {
+      background: rgba(110, 179, 255, 0.2);
+      border-color: rgba(110, 179, 255, 0.4);
+      color: var(--text);
+    }
+
+    .ai-prompt-copy svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .ai-prompt-copy.copied {
+      background: rgba(0, 255, 136, 0.15);
+      border-color: rgba(0, 255, 136, 0.3);
+      color: var(--success);
+    }
+
+    .ai-prompt-copy .copy-text { display: inline; }
+    .ai-prompt-copy .copied-text { display: none; }
+    .ai-prompt-copy.copied .copy-text { display: none; }
+    .ai-prompt-copy.copied .copied-text { display: inline; }
+
     @media (max-width: 768px) {
       .ai-prompt-display {
         padding: 20px;
+        padding-top: 50px;
         font-size: 13px;
       }
 
@@ -1445,12 +1487,33 @@
       .ai-prompt-placeholder {
         min-width: 120px;
       }
+
+      .ai-prompt-copy {
+        top: 10px;
+        right: 10px;
+        padding: 6px 10px;
+        font-size: 11px;
+      }
     }
 
     @media (max-width: 480px) {
       .ai-prompt-display {
         padding: 16px;
+        padding-top: 46px;
         font-size: 12px;
+      }
+
+      .ai-prompt-copy {
+        padding: 5px 8px;
+      }
+
+      .ai-prompt-copy span {
+        display: none;
+      }
+
+      .ai-prompt-copy svg {
+        width: 16px;
+        height: 16px;
       }
     }
 
@@ -2656,6 +2719,14 @@
       </p>
 
       <div class="ai-prompt-display reveal reveal-delay-3">
+        <button class="ai-prompt-copy interactive" data-sound="click" data-prompt="Use github.com/kmay89/SCQCS to build me a site about " onclick="copyPrompt(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          <span class="copy-text">Copy prompt</span>
+          <span class="copied-text">Copied!</span>
+        </button>
         <div class="ai-prompt-text">
           <span class="prompt-label">&gt;</span>
           <span class="ai-prompt-llm">
