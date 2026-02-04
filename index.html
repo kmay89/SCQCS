@@ -1331,6 +1331,129 @@
       background-clip: text;
     }
 
+    /* AI Prompt Display */
+    .ai-prompt-display {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(110, 179, 255, 0.2);
+      border-radius: 16px;
+      padding: 24px 32px;
+      margin-top: 40px;
+      font-family: var(--mono);
+      font-size: 15px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ai-prompt-display::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--success), var(--accent), var(--blue));
+      background-size: 300% 100%;
+      animation: prompt-gradient 4s ease infinite;
+    }
+
+    @keyframes prompt-gradient {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .ai-prompt-text {
+      color: var(--text-secondary);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0;
+      line-height: 1.8;
+    }
+
+    .ai-prompt-text .prompt-label {
+      color: var(--text-tertiary);
+      margin-right: 8px;
+    }
+
+    .ai-prompt-llm {
+      display: inline-flex;
+      position: relative;
+      min-width: 90px;
+      height: 1.4em;
+      overflow: hidden;
+      vertical-align: bottom;
+    }
+
+    .ai-prompt-llm-inner {
+      display: flex;
+      flex-direction: column;
+      animation: rotate-llm 8s ease-in-out infinite;
+    }
+
+    .ai-prompt-llm-item {
+      height: 1.4em;
+      display: flex;
+      align-items: center;
+      font-weight: 600;
+      color: var(--blue);
+      white-space: nowrap;
+    }
+
+    .ai-prompt-llm-item:nth-child(1) { color: #cc9b7a; }
+    .ai-prompt-llm-item:nth-child(2) { color: #10a37f; }
+    .ai-prompt-llm-item:nth-child(3) { color: #4285f4; }
+    .ai-prompt-llm-item:nth-child(4) { color: #615eff; }
+
+    @keyframes rotate-llm {
+      0%, 20% { transform: translateY(0); }
+      25%, 45% { transform: translateY(-1.4em); }
+      50%, 70% { transform: translateY(-2.8em); }
+      75%, 95% { transform: translateY(-4.2em); }
+      100% { transform: translateY(-5.6em); }
+    }
+
+    .ai-prompt-url {
+      color: var(--success);
+      font-weight: 500;
+    }
+
+    .ai-prompt-action {
+      color: var(--text);
+    }
+
+    .ai-prompt-placeholder {
+      display: inline-block;
+      min-width: 180px;
+      padding: 2px 12px;
+      background: rgba(110, 179, 255, 0.1);
+      border: 1px dashed rgba(110, 179, 255, 0.3);
+      border-radius: 6px;
+      color: var(--text-tertiary);
+      font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+      .ai-prompt-display {
+        padding: 20px;
+        font-size: 13px;
+      }
+
+      .ai-prompt-text {
+        line-height: 2;
+      }
+
+      .ai-prompt-placeholder {
+        min-width: 120px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .ai-prompt-display {
+        padding: 16px;
+        font-size: 12px;
+      }
+    }
+
     .template-hero {
       background: linear-gradient(135deg, rgba(110, 179, 255, 0.08) 0%, rgba(0, 255, 136, 0.04) 100%);
       border: 1px solid rgba(110, 179, 255, 0.2);
@@ -2531,6 +2654,25 @@
       <p class="section-description reveal reveal-delay-2">
         This repository is designed to be forked and adapted. Get a secure, privacy-respecting static site in minutes.
       </p>
+
+      <div class="ai-prompt-display reveal reveal-delay-3">
+        <div class="ai-prompt-text">
+          <span class="prompt-label">&gt;</span>
+          <span class="ai-prompt-llm">
+            <span class="ai-prompt-llm-inner">
+              <span class="ai-prompt-llm-item">Claude</span>
+              <span class="ai-prompt-llm-item">ChatGPT</span>
+              <span class="ai-prompt-llm-item">Gemini</span>
+              <span class="ai-prompt-llm-item">Qwen</span>
+              <span class="ai-prompt-llm-item">Claude</span>
+            </span>
+          </span>
+          <span>, use </span>
+          <span class="ai-prompt-url">github.com/kmay89/SCQCS</span>
+          <span class="ai-prompt-action">&nbsp;to build me a site about&nbsp;</span>
+          <span class="ai-prompt-placeholder">your idea here</span>
+        </div>
+      </div>
 
       <div class="template-hero reveal">
         <div class="template-header">
