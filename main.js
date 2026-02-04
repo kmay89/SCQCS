@@ -25,21 +25,23 @@ const SoundSystem = {
   play(type) {
     if (!this.ctx || !this.enabled) return;
 
+    // Helper to create connected oscillator + gain node pair
+    const createVoice = () => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      return { osc, gain };
+    };
+
     const now = this.ctx.currentTime;
 
     switch(type) {
       case 'click': {
         // Warm, satisfying haptic pop - like pressing a quality mechanical button
         // Two layered tones create richness: fundamental + soft harmonic
-        const osc1 = this.ctx.createOscillator();
-        const osc2 = this.ctx.createOscillator();
-        const gain1 = this.ctx.createGain();
-        const gain2 = this.ctx.createGain();
-
-        osc1.connect(gain1);
-        osc2.connect(gain2);
-        gain1.connect(this.ctx.destination);
-        gain2.connect(this.ctx.destination);
+        const { osc: osc1, gain: gain1 } = createVoice();
+        const { osc: osc2, gain: gain2 } = createVoice();
 
         // Primary tone - warm pop with satisfying pitch drop
         osc1.type = 'sine';
@@ -64,11 +66,7 @@ const SoundSystem = {
 
       case 'hover': {
         // Soft, gentle brush - barely there but pleasant
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
+        const { osc, gain } = createVoice();
 
         osc.type = 'sine';
         osc.frequency.setValueAtTime(680, now);
@@ -84,15 +82,8 @@ const SoundSystem = {
       case 'drawer': {
         // Gentle reveal chime - warm and welcoming
         // Two notes in harmony for a pleasant "opening" feel
-        const osc1 = this.ctx.createOscillator();
-        const osc2 = this.ctx.createOscillator();
-        const gain1 = this.ctx.createGain();
-        const gain2 = this.ctx.createGain();
-
-        osc1.connect(gain1);
-        osc2.connect(gain2);
-        gain1.connect(this.ctx.destination);
-        gain2.connect(this.ctx.destination);
+        const { osc: osc1, gain: gain1 } = createVoice();
+        const { osc: osc2, gain: gain2 } = createVoice();
 
         // Base tone - warm ascending note
         osc1.type = 'sine';
