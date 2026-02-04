@@ -692,6 +692,45 @@
       height: 24px;
     }
 
+    /* No cookies tag */
+    .no-cookies-tag {
+      position: absolute;
+      bottom: 40px;
+      right: 32px;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(0, 255, 136, 0.08);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 20px;
+      font-size: 11px;
+      color: var(--success);
+      letter-spacing: 0.02em;
+      opacity: 0.8;
+      transition: opacity 0.2s ease;
+    }
+
+    .no-cookies-tag:hover {
+      opacity: 1;
+    }
+
+    .no-cookies-tag svg {
+      width: 14px;
+      height: 14px;
+      opacity: 0.9;
+    }
+
+    @media (max-width: 768px) {
+      .no-cookies-tag {
+        bottom: 24px;
+        right: 16px;
+        font-size: 10px;
+        padding: 5px 10px;
+      }
+    }
+
     /* Section styling */
     section {
       padding: 120px 24px;
@@ -1968,6 +2007,14 @@
         </svg>
         Also: Free security template for your site
       </a>
+    </div>
+
+    <div class="no-cookies-tag" title="This site doesn't use cookies, analytics, or tracking">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M4.93 4.93l14.14 14.14"/>
+      </svg>
+      <span>No cookies</span>
     </div>
 
     <div class="scroll-indicator" data-sound="click">
