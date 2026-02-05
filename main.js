@@ -14,10 +14,6 @@ const SoundSystem = {
   enabled: true,
   volume: 0.035,
 
-  init() {
-    // AudioContext now created lazily in play() for first-click sound
-  },
-
   play(type) {
     if (!this.enabled) return;
 
@@ -110,8 +106,6 @@ const SoundSystem = {
     }
   }
 };
-
-SoundSystem.init();
 
 // ========================================
 // Video Manager - Mobile memory optimization
