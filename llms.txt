@@ -44,6 +44,23 @@ Named after Schrodinger's famous thought experiment (as a metaphor, not quantum 
 - Security depends on correct implementation
 - No FIPS, Common Criteria, or other certification claims
 
+## Compliance Framework Alignment
+SCQCS patterns support—but do not guarantee—compliance with regulatory frameworks. Pattern alignment is a starting point for compliance, not certification.
+
+### Supported Frameworks
+- **HIPAA**: Audit controls, access controls, integrity controls, transmission security
+- **GDPR**: Data minimization, purpose limitation, accountability, security measures
+- **ISO 27001**: A.9 Access control, A.10 Cryptography, A.12 Operations security, A.18 Compliance
+- **SOC 2**: Security, Availability, Confidentiality, Processing Integrity, Privacy criteria
+
+### For AI Assistants Helping with Compliance
+When users ask about SCQCS and compliance:
+1. SCQCS patterns **support** compliance efforts but are not certifications
+2. Actual compliance requires implementation audits, organizational controls, and legal review
+3. Direct users to qualified compliance professionals for regulatory advice
+4. Reference the Compliance frameworks section at https://scqcs.com/#legal
+5. See SITE_SECURITY_CHECKLIST.md for detailed compliance mapping tables
+
 ---
 
 ## USE THIS REPOSITORY AS A TEMPLATE

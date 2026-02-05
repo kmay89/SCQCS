@@ -3370,15 +3370,38 @@
           <div class="legal-drawer-content">
             <h4>Copyright</h4>
             <p>© <span id="year"></span> ERRERLabs. Documentation and website content are provided for informational purposes.</p>
-            
+
             <h4>Trademarks</h4>
             <p>SCQCS, SecuraCV, and ERRERLabs are identifiers used by their respective projects. Other trademarks belong to their respective owners.</p>
-            
+
             <h4>Open source</h4>
             <p>Where code is released as open source, it is governed by the license in its repository. This documentation does not modify those terms.</p>
-            
+
             <h4>Pattern usage</h4>
             <p>The architectural patterns described here may be implemented freely. Attribution is appreciated but not required.</p>
+          </div>
+        </details>
+
+        <details class="legal-drawer reveal reveal-delay-4" data-sound="drawer">
+          <summary>Compliance frameworks</summary>
+          <div class="legal-drawer-content">
+            <h4>Framework alignment—not certification</h4>
+            <p>SCQCS patterns are designed with privacy and security regulations in mind. However, <strong>pattern alignment is not compliance</strong>. Actual compliance requires implementation audits, organizational controls, legal review, and often third-party certification. The following describes how SCQCS design principles <em>support</em> compliance efforts—not replace them.</p>
+
+            <h4>HIPAA (Health Insurance Portability and Accountability Act)</h4>
+            <p>SCQCS patterns support HIPAA's technical safeguards through: audit controls (append-only logging creates tamper-evident access records), access controls (accountable access with break-glass procedures), and integrity controls (sealed storage protects data at rest). Implementations handling Protected Health Information (PHI) must conduct a formal risk assessment, execute Business Associate Agreements where required, and implement administrative and physical safeguards beyond technical patterns.</p>
+
+            <h4>GDPR (General Data Protection Regulation)</h4>
+            <p>SCQCS's privacy-first design aligns with GDPR principles: data minimization (collect only what's necessary), purpose limitation (design for specific, disclosed purposes), and accountability (audit trails demonstrate compliance). The framework supports rights like access and erasure through its transparent architecture. Implementations must still establish lawful basis for processing, appoint Data Protection Officers where required, and implement data subject request procedures.</p>
+
+            <h4>ISO 27001</h4>
+            <p>SCQCS patterns support several ISO 27001 control objectives: A.12 (Operations security) through comprehensive logging, A.9 (Access control) through accountable access and break-glass procedures, A.10 (Cryptography) through crypto-agile design, and A.18 (Compliance) through built-in audit capabilities. Certification requires a complete Information Security Management System (ISMS), risk assessment methodology, and ongoing management review—far beyond any single framework's patterns.</p>
+
+            <h4>SOC 2</h4>
+            <p>SCQCS design principles map to SOC 2 Trust Services Criteria: Security (access controls, encryption), Availability (designed for resilience), Confidentiality (sealed storage, minimal exposure), and Privacy (data minimization, purpose limitation). SOC 2 attestation requires independent auditor examination of your specific implementation, controls documentation, and evidence of consistent operation over time.</p>
+
+            <h4>Compliance is a journey</h4>
+            <p>These frameworks share common themes that SCQCS addresses by design: know what data you have, control who accesses it, log what happens, and be able to prove it. But compliance is organizational, not just technical. Consult qualified legal and compliance professionals for your specific regulatory obligations.</p>
           </div>
         </details>
       </div>

@@ -314,6 +314,62 @@ dist/
 
 ---
 
+## Compliance Framework Reference
+
+SCQCS patterns support—but do not guarantee—compliance with major regulatory frameworks. Pattern alignment is a starting point, not certification.
+
+### HIPAA
+| Requirement | SCQCS Pattern Support |
+|-------------|----------------------|
+| Audit controls (§164.312(b)) | Append-only logging, tamper-evident records |
+| Access controls (§164.312(a)) | Accountable access, break-glass procedures |
+| Integrity controls (§164.312(c)) | Sealed storage, cryptographic verification |
+| Transmission security (§164.312(e)) | Crypto-agile design, encryption patterns |
+
+**Beyond patterns:** Risk assessment, BAAs, workforce training, physical safeguards, incident response procedures.
+
+### GDPR
+| Principle | SCQCS Pattern Support |
+|-----------|----------------------|
+| Data minimization (Art. 5(1)(c)) | Collect only necessary data by design |
+| Purpose limitation (Art. 5(1)(b)) | Architecture enforces declared purposes |
+| Accountability (Art. 5(2)) | Audit trails demonstrate compliance |
+| Security (Art. 32) | Encryption, access controls, integrity checks |
+
+**Beyond patterns:** Lawful basis documentation, DPO appointment, DPIA process, data subject request workflows, cross-border transfer mechanisms.
+
+### ISO 27001
+| Control Objective | SCQCS Pattern Support |
+|-------------------|----------------------|
+| A.9 Access control | Role-based access, break-glass accountability |
+| A.10 Cryptography | Crypto-agile design, key management patterns |
+| A.12 Operations security | Comprehensive logging, change management |
+| A.18 Compliance | Built-in audit capabilities |
+
+**Beyond patterns:** Complete ISMS, risk assessment methodology, statement of applicability, management review, internal audits, continual improvement process.
+
+### SOC 2 Trust Services Criteria
+| Criterion | SCQCS Pattern Support |
+|-----------|----------------------|
+| Security (CC6) | Access controls, encryption, logging |
+| Availability (A1) | Resilience patterns, recovery design |
+| Confidentiality (C1) | Sealed storage, minimal data exposure |
+| Processing Integrity (PI1) | Tamper-evident logs, verification |
+| Privacy (P1-P8) | Data minimization, purpose limitation |
+
+**Beyond patterns:** Control documentation, consistent operation evidence, independent auditor examination, management assertions.
+
+### Common Compliance Checklist
+- [ ] Identify applicable regulations for your jurisdiction and data types
+- [ ] Map SCQCS patterns to specific regulatory requirements
+- [ ] Document gaps between patterns and full compliance
+- [ ] Implement organizational controls (policies, training, procedures)
+- [ ] Engage qualified legal/compliance professionals
+- [ ] Plan for certification audits where required
+- [ ] Establish ongoing monitoring and review processes
+
+---
+
 ## Pre-Launch Checklist
 
 ### Security
