@@ -154,6 +154,8 @@ const VideoManager = {
 
   // Replace video element with a static image to completely free video memory
   replaceWithPoster() {
+    if (!this.video) return;
+
     const poster = this.video.getAttribute('poster');
     if (!poster) return;
 
