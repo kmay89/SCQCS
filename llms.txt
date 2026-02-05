@@ -193,8 +193,8 @@ for file in index.html 404.html robots.txt sitemap.xml _headers favicon.ico secu
   [ -f "$file" ] && echo "✓ $file" || echo "✗ $file MISSING"
 done
 
-# Check for leftover template references
-grep -r "scqcs.com" --include="*.html" --include="*.txt" --include="*.xml" --include="*.json" .
+# Check for leftover template references (searches all key terms from Step 2)
+grep -i -r -E "scqcs|errerlabs|kmay89" . --include="*.html" --include="*.txt" --include="*.xml" --include="*.json"
 ```
 
 #### Step 8: Deploy
