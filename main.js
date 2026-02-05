@@ -134,21 +134,42 @@ const VideoManager = {
 
     // If user prefers reduced motion, show poster only
     if (this.prefersReducedMotion) {
-      this.video.pause();
-      this.video.removeAttribute('autoplay');
-      this.video.removeAttribute('loop');
+      this.replaceWithPoster();
       return;
     }
 
+    // On mobile, replace video with static poster to prevent memory issues
+    // This completely eliminates the crash/refresh problem
+    if (this.isMobile) {
+      this.replaceWithPoster();
+      return;
+    }
+
+    // Desktop: use video with visibility optimizations
     this.setupVisibilityHandler();
     this.setupIntersectionObserver();
     this.setupErrorHandler();
     this.setupCleanup();
+  },
 
-    // On mobile, be more aggressive about resource management
-    if (this.isMobile) {
-      this.setupMobileOptimizations();
-    }
+  // Replace video element with a static image to completely free video memory
+  replaceWithPoster() {
+    if (!this.video) return;
+
+    const poster = this.video.getAttribute('poster');
+    if (!poster) return;
+
+    // Create img element with same styling
+    const img = document.createElement('img');
+    img.src = poster;
+    img.alt = 'SCQCS Hero';
+    img.className = 'hero-video'; // Reuse same class for styling
+    img.setAttribute('loading', 'eager');
+    img.setAttribute('decoding', 'async');
+
+    // Replace video with img
+    this.video.parentNode.replaceChild(img, this.video);
+    this.video = null;
   },
 
   setupVisibilityHandler() {
@@ -195,29 +216,12 @@ const VideoManager = {
 
     // Handle stall/waiting events that might indicate memory issues
     const waitingHandler = () => {
-      if (this.isMobile && this.errorCount > 0) {
-        // On mobile with previous errors, be cautious
+      if (this.errorCount > 0) {
+        // With previous errors, be cautious
         this.pause();
       }
     };
     this._addListener(this.video, 'waiting', waitingHandler);
-  },
-
-  setupMobileOptimizations() {
-    // On mobile, control looping manually to save resources when not visible
-    // Remove loop attribute to control it manually
-    this.video.removeAttribute('loop');
-
-    const endedHandler = () => {
-      if (!this.isVisible || document.hidden) {
-        return; // Don't loop if not visible - this is the main memory saver
-      }
-
-      // Just restart the video without reloading - avoids flash/page jump
-      this.video.currentTime = 0;
-      this.play();
-    };
-    this._addListener(this.video, 'ended', endedHandler);
   },
 
   setupCleanup() {
@@ -236,10 +240,8 @@ const VideoManager = {
 
   // Permanently disable video and clean up all listeners
   disable() {
-    this.video.pause();
-    this.video.removeAttribute('autoplay');
-    this.video.removeAttribute('loop');
-    this.video.load(); // Reset to show poster
+    // Replace with poster instead of calling load() which can cause scroll issues
+    this.replaceWithPoster();
 
     // Disconnect observer
     if (this.observer) {
@@ -260,7 +262,7 @@ const VideoManager = {
     const playPromise = this.video.play();
     if (playPromise !== undefined) {
       playPromise.catch(err => {
-        // Autoplay was prevented - this is fine on mobile
+        // Autoplay was prevented - this is fine
         console.log('Video autoplay prevented:', err.message);
       });
     }
