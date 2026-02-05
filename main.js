@@ -575,8 +575,8 @@ const QuantumAnimation = {
   running: true,
   startTime: null,
   rafId: null,
-  // Use modern userAgentData API with fallback to regex
-  isMobile: navigator.userAgentData?.mobile ?? /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+  // Use matchMedia to align with CSS and correctly detect when to disable animation
+  isMobile: window.matchMedia('(max-width: 768px), (hover: none) and (pointer: coarse)').matches,
 
   // Animation durations (in ms)
   hueCycleDuration: 30000,  // 30s for full hue rotation
