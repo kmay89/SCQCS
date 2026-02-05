@@ -275,6 +275,39 @@
       transform: scale(0.98);
     }
 
+    /* Base card component - consolidated from pattern-card, principle-card, etc. */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 32px;
+      transition: all 0.3s var(--ease-out-expo);
+    }
+
+    .card:hover {
+      border-color: var(--border-hover);
+    }
+
+    /* Card modifier: lift on hover */
+    .card--lift:hover {
+      transform: translateY(-4px);
+    }
+
+    /* Card modifier: shadow on hover */
+    .card--shadow:hover {
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    /* Card modifier: centered text */
+    .card--centered {
+      text-align: center;
+    }
+
+    /* Card modifier: dark surface variant */
+    .card--dark {
+      background: var(--surface-2);
+    }
+
     /* Navigation */
     nav {
       position: fixed;
@@ -1166,19 +1199,10 @@
       margin-top: 64px;
     }
 
+    /* Extends .card .card--centered .card--lift .card--shadow */
     .pattern-card {
-      text-align: center;
       padding: 40px 32px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      transition: all 0.4s var(--ease-out-expo);
-    }
-
-    .pattern-card:hover {
-      border-color: var(--border-hover);
-      transform: translateY(-4px);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      transition-duration: 0.4s;
     }
 
     .pattern-icon {
@@ -1227,12 +1251,9 @@
       margin-top: 64px;
     }
 
+    /* Extends .card .card--dark .card--lift */
     .principle-card {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 32px;
-      transition: all 0.4s var(--ease-out-expo);
+      transition-duration: 0.4s;
       position: relative;
       overflow: hidden;
     }
@@ -1244,11 +1265,6 @@
       background: linear-gradient(135deg, var(--accent-soft) 0%, transparent 50%);
       opacity: 0;
       transition: opacity 0.4s ease;
-    }
-
-    .principle-card:hover {
-      border-color: var(--border-hover);
-      transform: translateY(-4px);
     }
 
     .principle-card:hover::before {
@@ -1370,16 +1386,10 @@
       gap: 24px;
     }
 
+    /* Extends .card */
     .arch-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
       border-radius: 20px;
       padding: 24px;
-      transition: all 0.3s var(--ease-out-expo);
-    }
-
-    .arch-card:hover {
-      border-color: var(--border-hover);
     }
 
     .arch-card-title {
@@ -1499,18 +1509,10 @@
       gap: 24px;
     }
 
+    /* Extends .card .card--centered .card--lift */
     .breakglass-step {
-      background: var(--surface);
-      border: 1px solid var(--border);
       border-radius: 20px;
       padding: 28px;
-      text-align: center;
-      transition: all 0.3s var(--ease-out-expo);
-    }
-
-    .breakglass-step:hover {
-      border-color: var(--border-hover);
-      transform: translateY(-4px);
     }
 
     .step-number {
@@ -1554,17 +1556,9 @@
       margin-top: 64px;
     }
 
+    /* Extends .card .card--lift */
     .ecosystem-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 32px;
-      transition: all 0.3s var(--ease-out-expo);
-    }
-
-    .ecosystem-card:hover {
-      border-color: var(--border-hover);
-      transform: translateY(-4px);
+      /* Uses base .card styles */
     }
 
     .ecosystem-icon {
@@ -2933,17 +2927,17 @@
       </div>
       
       <div class="patterns-grid">
-        <div class="pattern-card reveal interactive quantum-border" data-sound="hover">
+        <div class="card card--centered card--lift card--shadow pattern-card reveal interactive quantum-border" data-sound="hover">
           <div class="pattern-icon">📜</div>
           <h3 class="pattern-title">Append-only logging</h3>
           <p class="pattern-text">Events chain forward cryptographically. Modifications become detectable. Deletions become evident. History becomes verifiable.</p>
         </div>
-        <div class="pattern-card reveal reveal-delay-1 interactive quantum-border" data-sound="hover">
+        <div class="card card--centered card--lift card--shadow pattern-card reveal reveal-delay-1 interactive quantum-border" data-sound="hover">
           <div class="pattern-icon">🔐</div>
           <h3 class="pattern-title">Sealed storage</h3>
           <p class="pattern-text">Data encrypted at rest with minimal metadata exposure. Designed for retention without sprawl, access without surveillance.</p>
         </div>
-        <div class="pattern-card reveal reveal-delay-2 interactive quantum-border" data-sound="hover">
+        <div class="card card--centered card--lift card--shadow pattern-card reveal reveal-delay-2 interactive quantum-border" data-sound="hover">
           <div class="pattern-icon">🚨</div>
           <h3 class="pattern-title">Accountable access</h3>
           <p class="pattern-text">Emergency access patterns that are scoped, logged, and attributable. Exceptions exist—but they leave durable, tamper-evident receipts.</p>
@@ -2962,7 +2956,7 @@
       </p>
 
       <div class="principles-grid">
-        <div class="principle-card reveal interactive quantum-border" data-sound="hover">
+        <div class="card card--dark card--lift principle-card reveal interactive quantum-border" data-sound="hover">
           <span class="principle-number">01</span>
           <h3 class="principle-title">Witness, not watcher</h3>
           <p class="principle-text">Support evidence without enabling surveillance. Collect only what's necessary. Resist scope creep.</p>
@@ -2972,7 +2966,7 @@
           </div>
         </div>
 
-        <div class="principle-card reveal reveal-delay-1 interactive quantum-border" data-sound="hover">
+        <div class="card card--dark card--lift principle-card reveal reveal-delay-1 interactive quantum-border" data-sound="hover">
           <span class="principle-number">02</span>
           <h3 class="principle-title">Audit over trust</h3>
           <p class="principle-text">Cryptographic proofs outlast policies and good intentions. Make integrity verifiable.</p>
@@ -2982,7 +2976,7 @@
           </div>
         </div>
 
-        <div class="principle-card reveal reveal-delay-2 interactive quantum-border" data-sound="hover">
+        <div class="card card--dark card--lift principle-card reveal reveal-delay-2 interactive quantum-border" data-sound="hover">
           <span class="principle-number">03</span>
           <h3 class="principle-title">Exceptions leave fingerprints</h3>
           <p class="principle-text">Emergency access exists—but every use is remembered. Attribution is automatic and durable.</p>
@@ -2992,7 +2986,7 @@
           </div>
         </div>
 
-        <div class="principle-card reveal reveal-delay-3 interactive quantum-border" data-sound="hover">
+        <div class="card card--dark card--lift principle-card reveal reveal-delay-3 interactive quantum-border" data-sound="hover">
           <span class="principle-number">04</span>
           <h3 class="principle-title">Plan for rotation</h3>
           <p class="principle-text">Algorithms weaken. Keys expire. Build migration paths from day one.</p>
@@ -3002,7 +2996,7 @@
           </div>
         </div>
 
-        <div class="principle-card reveal reveal-delay-4 interactive quantum-border" data-sound="hover">
+        <div class="card card--dark card--lift principle-card reveal reveal-delay-4 interactive quantum-border" data-sound="hover">
           <span class="principle-number">05</span>
           <h3 class="principle-title">Local-first when possible</h3>
           <p class="principle-text">Every external dependency is attack surface. Minimize egress. Maximize autonomy.</p>
@@ -3012,7 +3006,7 @@
           </div>
         </div>
 
-        <div class="principle-card reveal interactive quantum-border" data-sound="hover">
+        <div class="card card--dark card--lift principle-card reveal interactive quantum-border" data-sound="hover">
           <span class="principle-number">06</span>
           <h3 class="principle-title">Design for distrust</h3>
           <p class="principle-text">The threat model includes insiders. Make misuse architecturally difficult, not just prohibited.</p>
@@ -3049,7 +3043,7 @@
         </div>
         
         <div class="arch-sidebar">
-          <div class="arch-card reveal reveal-delay-1">
+          <div class="card arch-card reveal reveal-delay-1">
             <h4 class="arch-card-title">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -3065,7 +3059,7 @@
             </ul>
           </div>
           
-          <div class="arch-card reveal reveal-delay-2">
+          <div class="card arch-card reveal reveal-delay-2">
             <h4 class="arch-card-title">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"/>
@@ -3102,17 +3096,17 @@
         </div>
         
         <div class="breakglass-steps">
-          <div class="breakglass-step interactive" data-sound="hover">
+          <div class="card card--centered card--lift breakglass-step interactive" data-sound="hover">
             <div class="step-number">01</div>
             <h4 class="step-title">Scoped by default</h4>
             <p class="step-text">Access should be constrained to minimum necessary scope—time range, record types, and purpose.</p>
           </div>
-          <div class="breakglass-step interactive" data-sound="hover">
+          <div class="card card--centered card--lift breakglass-step interactive" data-sound="hover">
             <div class="step-number">02</div>
             <h4 class="step-title">Multi-party when appropriate</h4>
             <p class="step-text">Consider requiring multiple approvals or split keys. Single-actor access is a design choice, not a default.</p>
           </div>
-          <div class="breakglass-step interactive" data-sound="hover">
+          <div class="card card--centered card--lift breakglass-step interactive" data-sound="hover">
             <div class="step-number">03</div>
             <h4 class="step-title">Durable attribution</h4>
             <p class="step-text">Every access creates a tamper-evident receipt: who, when, justification, scope, and outcomes.</p>
@@ -3132,7 +3126,7 @@
       </p>
       
       <div class="ecosystem-grid">
-        <div class="ecosystem-card reveal interactive quantum-border" data-sound="hover">
+        <div class="card card--lift ecosystem-card reveal interactive quantum-border" data-sound="hover">
           <div class="ecosystem-icon">👁️</div>
           <h3>SecuraCV</h3>
           <p>A privacy-preserving computer vision framework that outputs semantic events instead of storing video. Uses SCQCS patterns for its witness kernel and vault architecture.</p>
@@ -3144,7 +3138,7 @@
           </a>
         </div>
         
-        <div class="ecosystem-card reveal reveal-delay-1 interactive quantum-border" data-sound="hover">
+        <div class="card card--lift ecosystem-card reveal reveal-delay-1 interactive quantum-border" data-sound="hover">
           <div class="ecosystem-icon">🔬</div>
           <h3>Open Source</h3>
           <p>SCQCS patterns and implementations are developed in the open. Explore the code, contribute improvements, or fork for your own projects.</p>
@@ -3156,7 +3150,7 @@
           </a>
         </div>
         
-        <div class="ecosystem-card reveal reveal-delay-2 interactive quantum-border" id="contact" data-sound="hover">
+        <div class="card card--lift ecosystem-card reveal reveal-delay-2 interactive quantum-border" id="contact" data-sound="hover">
           <div class="ecosystem-icon">💬</div>
           <h3>Get involved</h3>
           <p>Interested in applying SCQCS patterns to your work? Building something that needs accountable privacy? Contact channels coming soon.</p>

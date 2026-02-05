@@ -14,6 +14,16 @@ const SoundSystem = {
   enabled: true,
   volume: 0.035,
 
+  // Helper to create connected oscillator + gain node pair
+  // Moved to object level to avoid recreation on each play() call
+  createVoice() {
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    return { osc, gain };
+  },
+
   play(type) {
     if (!this.enabled) return;
 
@@ -22,23 +32,14 @@ const SoundSystem = {
       this.ctx = new (window.AudioContext || window.webkitAudioContext)();
     }
 
-    // Helper to create connected oscillator + gain node pair
-    const createVoice = () => {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      return { osc, gain };
-    };
-
     const now = this.ctx.currentTime;
 
     switch(type) {
       case 'click': {
         // Warm, satisfying haptic pop - like pressing a quality mechanical button
         // Two layered tones create richness: fundamental + soft harmonic
-        const { osc: osc1, gain: gain1 } = createVoice();
-        const { osc: osc2, gain: gain2 } = createVoice();
+        const { osc: osc1, gain: gain1 } = this.createVoice();
+        const { osc: osc2, gain: gain2 } = this.createVoice();
 
         // Primary tone - warm pop with satisfying pitch drop
         osc1.type = 'sine';
@@ -63,7 +64,7 @@ const SoundSystem = {
 
       case 'hover': {
         // Soft, gentle brush - barely there but pleasant
-        const { osc, gain } = createVoice();
+        const { osc, gain } = this.createVoice();
 
         osc.type = 'sine';
         osc.frequency.setValueAtTime(680, now);
@@ -79,8 +80,8 @@ const SoundSystem = {
       case 'drawer': {
         // Gentle reveal chime - warm and welcoming
         // Two notes in harmony for a pleasant "opening" feel
-        const { osc: osc1, gain: gain1 } = createVoice();
-        const { osc: osc2, gain: gain2 } = createVoice();
+        const { osc: osc1, gain: gain1 } = this.createVoice();
+        const { osc: osc2, gain: gain2 } = this.createVoice();
 
         // Base tone - warm ascending note
         osc1.type = 'sine';
@@ -416,6 +417,22 @@ const MobileNav = {
   mobileNav: null,
   isOpen: false,
 
+  // Helper to add both click and touchend listeners
+  // Reduces duplication and ensures consistent iOS/touch support
+  addTouchAndClick(element, handler, options = {}) {
+    const { passive = true, preventDefault = false, stopPropagation = false } = options;
+
+    const wrappedHandler = (e) => {
+      if (preventDefault) e.preventDefault();
+      if (stopPropagation) e.stopPropagation();
+      handler(e);
+    };
+
+    element.addEventListener('click', wrappedHandler);
+    // Touchend fires more reliably on iOS Safari
+    element.addEventListener('touchend', wrappedHandler, { passive: passive && !preventDefault });
+  },
+
   init() {
     this.hamburger = document.getElementById('hamburger');
     this.mobileNav = document.getElementById('mobile-nav');
@@ -423,27 +440,17 @@ const MobileNav = {
     if (!this.hamburger || !this.mobileNav) return;
 
     // Toggle menu on hamburger click/touch
-    // Use both click and touchend for better iOS support
-    const handleToggle = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.toggle();
-    };
-
-    this.hamburger.addEventListener('click', handleToggle);
-    // Touchend fires more reliably on iOS Safari
-    this.hamburger.addEventListener('touchend', handleToggle, { passive: false });
+    this.addTouchAndClick(this.hamburger, () => this.toggle(), {
+      preventDefault: true,
+      stopPropagation: true
+    });
 
     // Close menu when clicking/touching a link
-    // Use shared idempotent handler to prevent double-firing on touch devices
+    const handleClose = () => {
+      if (this.isOpen) this.close();
+    };
     this.mobileNav.querySelectorAll('a').forEach(link => {
-      const handleClose = () => {
-        if (this.isOpen) {
-          this.close();
-        }
-      };
-      link.addEventListener('click', handleClose);
-      link.addEventListener('touchend', handleClose, { passive: true });
+      this.addTouchAndClick(link, handleClose);
     });
 
     // Close menu on escape key
@@ -454,14 +461,11 @@ const MobileNav = {
     });
 
     // Close menu when clicking/touching outside
-    // Use shared idempotent handler to prevent double-firing on touch devices
-    const handleOutsideClose = (e) => {
+    this.addTouchAndClick(this.mobileNav, (e) => {
       if (e.target === this.mobileNav && this.isOpen) {
         this.close();
       }
-    };
-    this.mobileNav.addEventListener('click', handleOutsideClose);
-    this.mobileNav.addEventListener('touchend', handleOutsideClose, { passive: true });
+    });
   },
 
   toggle() {
