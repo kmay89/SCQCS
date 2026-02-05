@@ -108,14 +108,12 @@ const SoundSystem = {
 };
 
 // ========================================
-// Video Manager - Mobile memory optimization
+// Video Manager - Visibility and error handling
 // ========================================
 const VideoManager = {
   video: null,
   observer: null,
   isVisible: true,
-  // Use modern userAgentData API with fallback to regex
-  isMobile: navigator.userAgentData?.mobile ?? /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
   prefersReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   errorCount: 0,
   maxErrors: 3,
@@ -138,14 +136,8 @@ const VideoManager = {
       return;
     }
 
-    // On mobile, replace video with static poster to prevent memory issues
-    // This completely eliminates the crash/refresh problem
-    if (this.isMobile) {
-      this.replaceWithPoster();
-      return;
-    }
-
-    // Desktop: use video with visibility optimizations
+    // Video now works on mobile - the refresh/scroll bug was caused by
+    // the quantum overlay (body::before), not the video element
     this.setupVisibilityHandler();
     this.setupIntersectionObserver();
     this.setupErrorHandler();
