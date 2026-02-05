@@ -121,13 +121,95 @@ Cross-Origin-Opener-Policy: same-origin
 Permissions-Policy: camera=(), microphone=(), geolocation=()...
 ```
 
-### For AI Assistants
-When helping a user set up a site using this template:
-1. Read `GETTING_STARTED.md` for Netlify deployment steps
-2. Read `SITE_SECURITY_CHECKLIST.md` for security best practices
-3. Replace all `scqcs.com` references with the user's domain
-4. Remind user to update `security.txt` contact info
-5. Verify CSP allows any external resources they need (fonts, images, APIs)
+### For AI Assistants - Complete Customization Workflow
+
+When helping a user fork and customize this template, follow this workflow:
+
+#### Step 1: Clone and Setup
+```bash
+git clone https://github.com/kmay89/SCQCS.git my-project
+cd my-project
+```
+
+#### Step 2: Global Find & Replace
+Run these replacements across all files:
+- `scqcs.com` → user's domain (e.g., `example.com`)
+- `SCQCS` → user's project name
+- `ERRERLabs` → user's organization name
+- `kmay89` → user's GitHub username
+
+#### Step 3: Update index.html Content
+The HTML file contains `<!-- CUSTOMIZE: -->` comment blocks marking each section:
+1. **SITE IDENTITY & SEO** - Meta tags, title, descriptions
+2. **JSON-LD STRUCTURED DATA** - Search engine data
+3. **COLOR THEME & TYPOGRAPHY** - CSS variables in `:root`
+4. **HERO SECTION** - Main headline, video/image, CTAs
+5. **ABOUT SECTION** - Project introduction
+6. **FEATURES/PATTERNS SECTION** - Core offerings (keep card structure)
+7. **PRINCIPLES/VALUES SECTION** - Guiding principles (keep card structure)
+8. **ARCHITECTURE SECTION** - Technical details
+9. **SPECIAL FEATURE SECTION** - Unique selling point (or remove)
+10. **ECOSYSTEM SECTION** - Related projects (or remove)
+11. **CTA/GETTING STARTED** - Call to action
+12. **LEGAL SECTION** - Privacy, terms, compliance
+13. **FOOTER** - Branding and links
+
+#### Step 4: Update Supporting Files
+| File | What to Change |
+|------|---------------|
+| `security.txt` | Contact URL, Expires date, Policy URL, Canonical URL |
+| `site.webmanifest` | name, short_name, description, theme_color |
+| `humans.txt` | Organization, Site URL, Team members |
+| `robots.txt` | Sitemap URL only |
+| `sitemap.xml` | All URLs |
+| `llms.txt` | Rewrite entirely for new project |
+| `_headers` | Add external domains to CSP if needed |
+
+#### Step 5: Replace Assets
+- `scqcs-hero.mp4` → User's hero video (or remove video, use image)
+- `scqcs-poster.jpeg` → User's poster/fallback image
+- All favicon files → Generate from user's icon at https://realfavicongenerator.net
+
+#### Step 6: Theming (CSS Variables)
+To change the color scheme, modify these in index.html `:root`:
+```css
+--accent: #f5c518;        /* Primary brand color (gold) */
+--accent-glow: rgba(245,197,24,0.15);
+--accent-soft: rgba(245,197,24,0.08);
+--blue: #6eb3ff;          /* Secondary accent */
+```
+For a light theme, also adjust:
+```css
+--black: #ffffff;         /* Background */
+--surface: #f5f5f5;       /* Card backgrounds */
+--text: #000000;          /* Text color */
+```
+
+#### Step 7: Verify Before Deploy
+Run the checks in `PREFLIGHT.md`:
+```bash
+# Check all required files exist
+for file in index.html 404.html robots.txt sitemap.xml _headers favicon.ico security.txt; do
+  [ -f "$file" ] && echo "✓ $file" || echo "✗ $file MISSING"
+done
+
+# Check for leftover template references
+grep -r "scqcs.com" --include="*.html" --include="*.txt" --include="*.xml" --include="*.json" .
+```
+
+#### Step 8: Deploy
+Recommend Netlify (see `GETTING_STARTED.md`):
+1. Push to GitHub
+2. Connect repo to Netlify
+3. Deploy settings: Build command: (none), Publish directory: `/`
+
+### Preserving Functionality
+When customizing, keep these for full functionality:
+- All `data-sound="click|hover|drawer"` attributes (audio feedback)
+- All `.reveal` and `.reveal-delay-*` classes (scroll animations)
+- All `.card` and `.quantum-border` classes (visual effects)
+- The `main.js` file (handles all interactions)
+- The `_headers` file structure (security headers)
 
 ### License
 MIT License - Free to use, modify, and redistribute. No attribution required.
