@@ -568,11 +568,15 @@ document.addEventListener('click', (e) => {
 // JavaScript-driven to avoid browser rendering issues
 // with @property CSS animations on the html element.
 // Safari/Firefox can flash white when CSS animations cycle.
+// DISABLED ON MOBILE: The overlay is hidden on mobile via CSS,
+// so we skip the animation entirely to save CPU/battery.
 // ========================================
 const QuantumAnimation = {
   running: true,
   startTime: null,
   rafId: null,
+  // Use modern userAgentData API with fallback to regex
+  isMobile: navigator.userAgentData?.mobile ?? /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
 
   // Animation durations (in ms)
   hueCycleDuration: 30000,  // 30s for full hue rotation
@@ -580,6 +584,12 @@ const QuantumAnimation = {
   pulseDelay: 6000,         // 6s delay before pulse starts
 
   init() {
+    // Skip animation on mobile - the overlay is hidden via CSS anyway
+    // This saves CPU/battery on mobile devices
+    if (this.isMobile) {
+      return;
+    }
+
     this.startTime = performance.now();
     this.animate();
 
