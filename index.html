@@ -162,7 +162,10 @@
        browser rendering issues with @property animations on html element.
        Safari/Firefox can flash white when CSS animations cycle on documentElement. */
 
-    /* Quantum wash overlay - visible color life */
+    /* Quantum wash overlay - visible color life
+       DISABLED ON MOBILE: The combination of position:fixed + mix-blend-mode +
+       continuous CSS variable updates causes Safari/Firefox mobile to flash white
+       and reset scroll position every 30-60 seconds */
     body::before {
       content: '';
       position: fixed;
@@ -180,6 +183,13 @@
       );
       mix-blend-mode: overlay;
       transition: opacity 0.5s ease;
+    }
+
+    /* Disable quantum overlay on mobile/touch devices to prevent refresh/scroll bugs */
+    @media (max-width: 768px), (hover: none) and (pointer: coarse) {
+      body::before {
+        display: none;
+      }
     }
 
     /* Quantum border glow for cards */
