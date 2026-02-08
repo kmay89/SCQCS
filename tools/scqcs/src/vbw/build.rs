@@ -175,6 +175,11 @@ fn load_or_create_policy(path: &Path) -> Result<Policy> {
     }
 }
 
+/// Capture the current build environment.
+///
+/// NOTE: This implementation targets Unix/Linux and CI runners (GitHub Actions,
+/// Docker). OS detection uses `uname` and tool paths use `which`. On non-Unix
+/// systems the OS fields will fall back to "unknown".
 fn capture_environment(policy: &Policy) -> Result<Environment> {
     let os_name = get_cmd_output("uname", &["-s"]).unwrap_or_else(|_| "unknown".into());
     let os_version = get_cmd_output("uname", &["-r"]).ok();

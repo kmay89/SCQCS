@@ -70,7 +70,7 @@ pub fn source_worktree_hash() -> Result<String> {
         }
     }
     let result = hasher.finalize();
-    Ok(result.iter().map(|b| format!("{:02x}", b)).collect())
+    Ok(crate::hash::hex_encode(&result))
 }
 
 fn run_git(args: &[&str]) -> Result<String> {

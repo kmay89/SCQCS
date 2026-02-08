@@ -17,11 +17,17 @@
     },
     "container": {
       "type": "object",
-      "required": ["type", "image_digest"],
+      "required": ["type"],
       "properties": {
         "type": { "enum": ["docker", "oci", "none"] },
         "image": { "type": "string" },
         "image_digest": { "type": "string" }
+      },
+      "if": {
+        "properties": { "type": { "enum": ["docker", "oci"] } }
+      },
+      "then": {
+        "required": ["image_digest"]
       }
     },
     "tools": {

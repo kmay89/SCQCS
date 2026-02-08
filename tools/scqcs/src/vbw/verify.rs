@@ -13,6 +13,14 @@ pub enum Verdict {
     Unverified(Vec<String>),
 }
 
+/// Parsed component files loaded once during verification.
+struct ComponentData {
+    environment: Option<Environment>,
+    materials_lock: Option<MaterialsLock>,
+    outputs: Option<Outputs>,
+    policy: Option<Policy>,
+}
+
 /// Verify a VBW witness bundle.
 pub fn run_verify(bundle_dir: &Path) -> Result<Verdict> {
     let mut errors: Vec<String> = Vec::new();
@@ -63,24 +71,40 @@ pub fn run_verify(bundle_dir: &Path) -> Result<Verdict> {
         Err(e) => errors.push(format!("Signature verification error: {}", e)),
     }
 
-    // 4. Verify component file hashes
-    verify_component_hash(
+    // 4. Load component files once, verify hashes, and parse
+    let mut components = ComponentData {
+        environment: None,
+        materials_lock: None,
+        outputs: None,
+        policy: None,
+    };
+
+    verify_and_parse_component(
         bundle_dir,
         "environment.json",
         &manifest.environment_hash,
         &mut errors,
+        |data| {
+            components.environment = serde_json::from_str(data).ok();
+        },
     );
-    verify_component_hash(
+    verify_and_parse_component(
         bundle_dir,
         "materials.lock.json",
         &manifest.materials_lock_hash,
         &mut errors,
+        |data| {
+            components.materials_lock = serde_json::from_str(data).ok();
+        },
     );
-    verify_component_hash(
+    verify_and_parse_component(
         bundle_dir,
         "outputs.json",
         &manifest.outputs_hash,
         &mut errors,
+        |data| {
+            components.outputs = serde_json::from_str(data).ok();
+        },
     );
 
     // 5. Verify policy ref
@@ -96,14 +120,11 @@ pub fn run_verify(bundle_dir: &Path) -> Result<Verdict> {
         } else {
             eprintln!("[vbw] Policy hash: OK");
         }
+        components.policy = serde_json::from_str(&policy_data).ok();
     }
 
     // 6. Verify output artifacts exist and match
-    let outputs_path = bundle_dir.join("outputs.json");
-    if outputs_path.exists() {
-        let outputs_json = fs::read_to_string(&outputs_path)?;
-        let outputs: Outputs = serde_json::from_str(&outputs_json).context("parsing outputs.json")?;
-
+    if let Some(ref outputs) = components.outputs {
         for artifact in &outputs.artifacts {
             let artifact_path = PathBuf::from(&artifact.path);
             if artifact_path.exists() {
@@ -131,12 +152,15 @@ pub fn run_verify(bundle_dir: &Path) -> Result<Verdict> {
         );
     }
 
-    // 7. Check policy compliance
-    let policy_path = bundle_dir.join("policy.json");
-    if policy_path.exists() {
-        let policy_data = fs::read_to_string(&policy_path)?;
-        let policy: Policy = serde_json::from_str(&policy_data)?;
-        check_policy_compliance(&manifest, &policy, &mut warnings);
+    // 7. Check policy compliance (using already-parsed data)
+    if let Some(ref policy) = components.policy {
+        check_policy_compliance(
+            &manifest,
+            policy,
+            components.environment.as_ref(),
+            components.materials_lock.as_ref(),
+            &mut warnings,
+        );
     }
 
     // 8. Emit verdict
@@ -164,12 +188,15 @@ pub fn run_verify(bundle_dir: &Path) -> Result<Verdict> {
     }
 }
 
-fn verify_component_hash(
+fn verify_and_parse_component<F>(
     bundle_dir: &Path,
     filename: &str,
     expected: &str,
     errors: &mut Vec<String>,
-) {
+    parse_fn: F,
+) where
+    F: FnOnce(&str),
+{
     let path = bundle_dir.join(filename);
     match fs::read_to_string(&path) {
         Ok(data) => {
@@ -182,44 +209,36 @@ fn verify_component_hash(
             } else {
                 eprintln!("[vbw] {}: OK", filename);
             }
+            parse_fn(&data);
         }
         Err(e) => errors.push(format!("Cannot read {}: {}", filename, e)),
     }
 }
 
-fn check_policy_compliance(manifest: &Manifest, policy: &Policy, warnings: &mut Vec<String>) {
-    // Check dirty-tree policy
+fn check_policy_compliance(
+    manifest: &Manifest,
+    policy: &Policy,
+    environment: Option<&Environment>,
+    materials_lock: Option<&MaterialsLock>,
+    warnings: &mut Vec<String>,
+) {
     if manifest.git.dirty {
         warnings.push("Build from dirty git tree".to_string());
     }
 
-    // Check reproducibility mode
-    let env_path = PathBuf::from("vbw/environment.json");
-    if env_path.exists() {
-        if let Ok(env_data) = fs::read_to_string(&env_path) {
-            if let Ok(env) = serde_json::from_str::<Environment>(&env_data) {
-                if env.reproducibility.mode != policy.requirements.reproducibility.mode {
-                    warnings.push(format!(
-                        "Environment mode {:?} differs from policy {:?}",
-                        env.reproducibility.mode, policy.requirements.reproducibility.mode
-                    ));
-                }
-            }
+    if let Some(env) = environment {
+        if env.reproducibility.mode != policy.requirements.reproducibility.mode {
+            warnings.push(format!(
+                "Environment mode {:?} differs from policy {:?}",
+                env.reproducibility.mode, policy.requirements.reproducibility.mode
+            ));
         }
     }
 
-    // Check lockfile requirement
     if policy.requirements.materials.require_lockfile_hashes {
-        let mat_path = PathBuf::from("vbw/materials.lock.json");
-        if mat_path.exists() {
-            if let Ok(mat_data) = fs::read_to_string(&mat_path) {
-                if let Ok(mat) = serde_json::from_str::<MaterialsLock>(&mat_data) {
-                    if mat.lockfiles.is_empty() {
-                        warnings.push(
-                            "Policy requires lockfile hashes but none found".to_string(),
-                        );
-                    }
-                }
+        if let Some(mat) = materials_lock {
+            if mat.lockfiles.is_empty() {
+                warnings.push("Policy requires lockfile hashes but none found".to_string());
             }
         }
     }

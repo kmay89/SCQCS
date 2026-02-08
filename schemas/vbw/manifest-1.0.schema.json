@@ -42,7 +42,7 @@
       "required": ["key_id", "public_key_ed25519"],
       "properties": {
         "key_id": { "type": "string", "minLength": 3, "maxLength": 128 },
-        "public_key_ed25519": { "type": "string", "pattern": "^[A-Za-z0-9+/=]{32,128}$" },
+        "public_key_ed25519": { "type": "string", "pattern": "^[A-Za-z0-9+/=]{44}$" },
         "issuer": { "type": "string" }
       }
     },
