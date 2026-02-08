@@ -69,21 +69,23 @@ VBW v1.0 is a **working implementation** — the CLI builds, signs, and verifies
 
 **What works today:**
 - Ed25519 key generation, signing, and verification (real, not demo)
-- SHA-256 hashing of all source trees, lockfiles, and output artifacts (real)
+- SHA-256 hashing of all source trees, lockfiles, and output artifacts (real, streaming for large files)
+- Canonical JSON signing: signature covers deterministic canonical manifest bytes (sorted keys, compact JSON), not the pretty-printed file on disk
 - Git commit/branch/dirty detection (real)
-- Build transcript capture (real, with a limitation noted below)
-- Full verify pipeline: hash checks, signature verification, policy compliance
+- Build transcript capture with interleaved stdout/stderr and ISO-8601 timestamps
+- Strict fail-closed verify pipeline: hash checks, signature verification, bundle completeness, unexpected file detection, path traversal rejection, symlink escape detection
+- Enforcement honesty: manifest records what was actually enforced vs. requested (Mode A/B enforcement is not implemented; the manifest says so explicitly via `enforcement.mode_enforced=false`)
 - GitHub Actions integration
 
 **What is not yet implemented (TODOs):**
-- Build-time policy enforcement (Mode A does not block network; Mode B does not verify dependency sources)
+- Build-time policy enforcement (Mode A does not block network; Mode B does not verify dependency sources). The manifest honestly records `mode_enforced=false` for these modes.
 - Co-signature (attest) verification during `verify` (signatures are written but not checked)
 - Vendor tarball hashing (`archive_sha256` / `extracted_tree_hash` fields are always empty)
 - Source tree hash re-verification during `verify` (the stored hash is checked for integrity but not recomputed from the local repo)
 - Schema validation of bundle JSON against the published schemas
+- Individual dependency artifact verification from lockfiles. **Lockfiles are hashed; individual dependency artifact verification is future work.**
 
 **Known limitations:**
-- Build transcript captures stdout fully, then stderr (not interleaved)
 - Environment capture requires Unix (`uname`, `which`) — falls back to "unknown" on other platforms
 - Container detection is heuristic (checks `/.dockerenv`, `/proc/self/cgroup`)
 
@@ -98,9 +100,9 @@ VBW v1.0 is a **working implementation** — the CLI builds, signs, and verifies
 | What OS/container ran the build? | OS, kernel, architecture, container digest |
 | Can this build be reproduced? | Reproducibility mode recorded (Mode A/B/C) |
 | Has the output been tampered with? | SHA-256 hashes of every artifact in `outputs.json` |
-| Who attested to all of this? | Ed25519 signature over the manifest |
+| Who attested to all of this? | Ed25519 signature over canonical manifest bytes |
 
-> **Note on reproducibility:** VBW v1.0 *records* the reproducibility mode but does not *enforce* it. Selecting Mode A does not actually block network access during the build. Enforcement is planned for a future version. The mode is an honest declaration by the builder, verified against policy at audit time.
+> **Note on reproducibility:** VBW v1.0 *records* the reproducibility mode but does not *enforce* it at build time. Selecting Mode A does not actually block network access. The manifest honestly records `enforcement.mode_enforced=false` for modes A and B. Mode C (Witnessed Non-Deterministic) is the only mode where `mode_enforced=true` in v1.0, because it makes no reproducibility promises.
 
 ---
 
@@ -186,13 +188,15 @@ vbw/
   environment.json             # OS, compiler versions, container digest
   materials.lock.json          # Dependency lockfile hashes
   outputs.json                 # Artifact paths, SHA-256 hashes, sizes
-  transcript.txt               # Full build log (stdout/stderr, sequential)
+  transcript.txt               # Full build log (interleaved stdout/stderr with timestamps)
   policy.json                  # Build policy requirements
   signatures/
-    builder.ed25519.sig        # Ed25519 signature over manifest.json
+    builder.ed25519.sig        # Ed25519 signature over canonical manifest bytes
   hashes/
-    manifest.sha256            # SHA-256 of manifest.json
+    manifest.sha256            # SHA-256 of canonical manifest bytes
 ```
+
+> **Canonical signing:** The signature and manifest hash are computed over *canonical manifest bytes* (sorted keys, compact JSON), not the pretty-printed `manifest.json` file on disk. The file on disk is human-readable; verification re-canonicalizes the parsed manifest to check the signature. This ensures byte-level signing stability regardless of JSON formatting.
 
 ### manifest.json
 
@@ -336,22 +340,28 @@ scqcs vbw verify [--bundle <dir>]
 |--------|---------|-------------|
 | `--bundle` | `vbw` | Path to the witness bundle directory |
 
-**Verification checks:**
+**Verification checks (strict, fail-closed):**
 
-1. Recomputes `manifest.sha256` and compares to stored hash
-2. Verifies Ed25519 signature against the public key in the manifest
-3. Loads each component file, recomputes its hash, compares to manifest
-4. Checks that output artifacts exist and match `outputs.json` hashes
-5. Validates policy compliance (dirty tree warning, mode mismatch, lockfile presence)
+1. Validates bundle directory exists and is a real directory
+2. Checks all required files are present (manifest, environment, materials, outputs, transcript, policy, signature, hash)
+3. Rejects unexpected files in the bundle (strict bundle policy — extra files are an error)
+4. Checks for symlinks that escape the bundle directory
+5. Parses manifest, re-canonicalizes to canonical bytes (sorted keys, compact JSON)
+6. Recomputes manifest hash from canonical bytes and compares to `hashes/manifest.sha256`
+7. Verifies Ed25519 signature against canonical manifest bytes
+8. Loads each component file, recomputes its SHA-256 hash, compares to manifest reference
+9. Checks output artifacts exist and match `outputs.json` hashes (with path traversal rejection)
+10. Validates enforcement consistency (mode_requested matches policy mode)
+11. Validates policy compliance (dirty tree warning, mode mismatch, lockfile presence)
 
 **What verify does NOT check (TODOs):**
-- Co-signatures from `attest` are not verified
+- Co-signatures from `attest` are not verified (co-signature `.sig` files in `signatures/` are allowed but not checked)
 - Source tree hash is not recomputed from the local git repo
 - JSON files are not validated against the published schemas
 
 **Exit codes:**
 - `0` — Verified (or verified with variance)
-- `1` — Unverified (integrity failure)
+- `1` — Unverified (integrity failure, missing files, unexpected files, bad signature)
 
 **Three verdicts:**
 
@@ -390,14 +400,14 @@ VBW defines three levels of build reproducibility. In v1.0, these are **recorded
 The strictest mode. Declares that identical inputs produce identical outputs, byte-for-byte.
 
 - **Intent:** No network access, pinned toolchain, `SOURCE_DATE_EPOCH` set
-- **Reality in v1.0:** The mode is recorded but the tool does not block network access or enforce timestamp normalization. The builder is making a promise that auditors can check manually.
+- **Reality in v1.0:** The mode is recorded but the tool does not block network access or enforce timestamp normalization. The builder is making a promise that auditors can check manually. **The manifest records `enforcement.mode_enforced=false` and prints a WARNING during build.**
 
 ### Mode B: Locked Network (Default)
 
 A practical middle ground. Declares that network access is only used for fetching locked, hashed dependencies.
 
 - **Intent:** Dependencies come from lockfiles with recorded hashes
-- **Reality in v1.0:** The tool records lockfile hashes but does not verify that the build only fetched from those lockfiles. It's a record of what lockfiles existed, not a guarantee the build respected them.
+- **Reality in v1.0:** The tool records lockfile hashes but does not verify that the build only fetched from those lockfiles. It's a record of what lockfiles existed, not a guarantee the build respected them. **The manifest records `enforcement.mode_enforced=false` and prints a WARNING during build.**
 
 ### Mode C: Witnessed Non-Deterministic
 
@@ -407,6 +417,7 @@ Provenance and integrity without a reproducibility guarantee.
 - Build may not be reproducible
 - Still records what happened: who built it, what tools, what outputs
 - Useful for complex builds that can't (yet) be made deterministic
+- **This is the only mode where `enforcement.mode_enforced=true` in v1.0, because it makes no reproducibility promises that need enforcement.**
 
 ---
 
@@ -688,10 +699,12 @@ All VBW files conform to JSON Schemas published in `schemas/vbw/`. These schemas
 
 ### What VBW Proves (real, implemented)
 
-- The build artifacts match the hashes recorded at build time (SHA-256)
-- The manifest was signed by the holder of the declared Ed25519 key
+- The build artifacts match the hashes recorded at build time (SHA-256, streaming for large files)
+- The manifest was signed by the holder of the declared Ed25519 key (signature covers canonical manifest bytes)
 - The environment, dependencies, and policy files have not been modified since signing
 - The git commit and dirty status were accurately recorded at build time
+- The bundle has not been tampered with (strict verification rejects unexpected files, symlink escapes, path traversal)
+- The enforcement field honestly records what was actually enforced vs. requested
 
 ### What VBW Does Not Prove
 
@@ -748,10 +761,21 @@ For quick reference, every TODO mentioned in this document and in the code:
 | Co-signature verification in `verify` | `verify.rs` | High |
 | Source tree hash re-verification during `verify` | `verify.rs` | Medium |
 | Vendor tarball hashing (`archive_sha256`, `extracted_tree_hash`) | `build.rs`, `model.rs` | Medium |
+| Individual dependency artifact verification from lockfiles | `build.rs` | Medium |
 | Runtime JSON schema validation | `verify.rs` | Low |
 | Richer material kind values in schema (cargo, go, ruby) | `build.rs`, schema | Low |
-| Interleaved stdout/stderr transcript capture | `build.rs` | Low |
 | Transparency log integration | Roadmap (VBW-2) | Future |
 | Multi-builder consensus (N-of-M signatures) | Roadmap (VBW-2) | Future |
 | OIDC identity binding | Roadmap (VBW-2) | Future |
 | SBOM integration | Roadmap (VBW-2) | Future |
+
+### Completed in this version
+
+| Done | Where | Notes |
+|------|-------|-------|
+| Canonical JSON signing (RFC 8785-equivalent) | `canonical.rs` | Signature covers sorted-key, compact JSON bytes |
+| Strict fail-closed verify | `verify.rs` | Missing files, extra files, symlink escapes all rejected |
+| Enforcement honesty (mode_enforced flag) | `model.rs`, `build.rs` | Manifest records what was actually enforced |
+| Interleaved stdout/stderr transcript capture | `build.rs` | Timestamped, threaded, arrival-order |
+| Streaming SHA-256 for large files | `hash.rs` | 64 KiB buffered reads, constant memory |
+| Path traversal rejection | `verify.rs` | Rejects `..` in artifact paths, absolute paths, escaping symlinks |

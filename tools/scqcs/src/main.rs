@@ -9,10 +9,10 @@ mod hash;
 mod sign;
 mod vbw;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::Parser;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use cli::{Cli, Commands, VbwAction};
 
@@ -78,7 +78,7 @@ fn cmd_keygen(output: Option<PathBuf>) -> Result<()> {
 }
 
 fn cmd_attest(
-    bundle: &PathBuf,
+    bundle: &Path,
     keyfile: Option<&std::path::Path>,
     key_id: Option<&str>,
 ) -> Result<()> {
@@ -86,10 +86,13 @@ fn cmd_attest(
     let public_key = sign::public_key_from_secret(&secret_key)?;
     let resolved_key_id = key_id.unwrap_or("maintainer@local");
 
-    // Read and sign the manifest
+    // Read manifest, parse, and sign canonical bytes (consistent with build + verify)
     let manifest_path = bundle.join("manifest.json");
     let manifest_json = fs::read_to_string(&manifest_path)?;
-    let signature = sign::sign(&secret_key, manifest_json.as_bytes())?;
+    let manifest: vbw::model::Manifest =
+        serde_json::from_str(&manifest_json).context("parsing manifest.json")?;
+    let canonical_bytes = vbw::canonical::canonical_manifest_bytes(&manifest);
+    let signature = sign::sign(&secret_key, &canonical_bytes)?;
 
     // Write co-signature
     let sig_dir = bundle.join("signatures");
@@ -105,7 +108,10 @@ fn cmd_attest(
     eprintln!("[vbw] Attestation added:");
     eprintln!("  Key ID: {}", resolved_key_id);
     eprintln!("  Public key: {}", public_key);
-    eprintln!("  Signature: {}", sig_path.display());
+    eprintln!(
+        "  Signature (over canonical manifest bytes): {}",
+        sig_path.display()
+    );
 
     Ok(())
 }

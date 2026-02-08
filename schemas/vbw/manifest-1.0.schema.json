@@ -54,6 +54,18 @@
         "hash_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
       }
     },
+    "enforcement": {
+      "type": "object",
+      "description": "Records what the build tool actually enforced at build time. Always present in bundles produced by VBW v1.0+.",
+      "required": ["mode_requested", "mode_enforced", "network_blocked", "source_date_epoch_set"],
+      "properties": {
+        "mode_requested": { "enum": ["A_DETERMINISTIC", "B_LOCKED_NETWORK", "C_WITNESSED_ND"] },
+        "mode_enforced": { "type": "boolean", "description": "true if the tool actively enforced the requested mode's constraints" },
+        "network_blocked": { "type": "boolean", "description": "true if network access was blocked during the build" },
+        "source_date_epoch_set": { "type": "boolean", "description": "true if SOURCE_DATE_EPOCH was set in the build environment" },
+        "notes": { "type": "string", "maxLength": 4096, "description": "Human-readable explanation of enforcement gaps" }
+      }
+    },
     "notes": { "type": "string", "maxLength": 4096 },
     "ext": { "type": "object" }
   }
