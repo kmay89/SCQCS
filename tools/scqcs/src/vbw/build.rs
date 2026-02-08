@@ -387,51 +387,14 @@ fn run_build_network_isolated(build_cmd: &[String]) -> Result<String> {
     ];
     args.extend_from_slice(build_cmd);
 
-    let mut child = Command::new("unshare")
+    let child = Command::new("unshare")
         .args(&args)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
         .with_context(|| "spawning unshare for network-isolated build")?;
 
-    let (tx, rx) = mpsc::channel::<String>();
-
-    let stdout = child.stdout.take().expect("stdout was piped");
-    let tx_out = tx.clone();
-    let stdout_thread = thread::spawn(move || {
-        pipe_lines(BufReader::new(stdout), "stdout", tx_out);
-    });
-
-    let stderr = child.stderr.take().expect("stderr was piped");
-    let tx_err = tx;
-    let stderr_thread = thread::spawn(move || {
-        pipe_lines(BufReader::new(stderr), "stderr", tx_err);
-    });
-
-    stdout_thread.join().expect("stdout reader thread panicked");
-    stderr_thread.join().expect("stderr reader thread panicked");
-
-    let mut transcript = String::new();
-    let mut truncated = false;
-    for line in rx.iter() {
-        if transcript.len() + line.len() + 1 > MAX_TRANSCRIPT_BYTES {
-            truncated = true;
-            break;
-        }
-        transcript.push_str(&line);
-        transcript.push('\n');
-    }
-    if truncated {
-        let msg = format!(
-            "\n[vbw] TRANSCRIPT TRUNCATED at {} bytes (limit: {} bytes)\n",
-            transcript.len(),
-            MAX_TRANSCRIPT_BYTES
-        );
-        transcript.push_str(&msg);
-        eprintln!("{}", msg.trim());
-    }
-
-    let status = child.wait().context("waiting for network-isolated build command")?;
+    let (transcript, status) = capture_transcript(child)?;
     if !status.success() {
         anyhow::bail!(
             "Build command failed with exit code: {}",
@@ -622,6 +585,10 @@ fn lockfile_kind(name: &str) -> &str {
 /// consumption if a build command produces excessive output (DoS protection).
 const MAX_TRANSCRIPT_BYTES: usize = 128 * 1024 * 1024;
 
+/// Maximum length of a single line captured in the transcript (64 KiB).
+/// Prevents a single extremely long line from consuming excessive memory.
+const MAX_LINE_LENGTH: usize = 64 * 1024;
+
 /// Read lines from a pipe, truncate overlong lines, tag with stream name
 /// and timestamp, echo to stderr, and send to the channel.
 fn pipe_lines<R: std::io::Read>(reader: BufReader<R>, stream: &str, tx: mpsc::Sender<String>) {
@@ -642,12 +609,8 @@ fn pipe_lines<R: std::io::Read>(reader: BufReader<R>, stream: &str, tx: mpsc::Se
     }
 }
 
-/// Maximum length of a single line captured in the transcript (64 KiB).
-/// Prevents a single extremely long line from consuming excessive memory.
-const MAX_LINE_LENGTH: usize = 64 * 1024;
-
-/// Run the user's build command, capturing interleaved stdout and stderr
-/// with timestamps for forensic value.
+/// Capture interleaved stdout/stderr from a spawned child process into a
+/// timestamped transcript string.
 ///
 /// Each line is tagged with a stream identifier and ISO-8601 timestamp:
 ///   [2026-01-01T00:00:00.123Z] [stdout] line contents here
@@ -658,36 +621,22 @@ const MAX_LINE_LENGTH: usize = 64 * 1024;
 ///
 /// The transcript is capped at MAX_TRANSCRIPT_BYTES to prevent memory
 /// exhaustion from pathological build output.
-fn run_build_command(cmd: &[String]) -> Result<String> {
-    if cmd.is_empty() {
-        anyhow::bail!("No build command specified");
-    }
-
-    let mut child = Command::new(&cmd[0])
-        .args(&cmd[1..])
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .with_context(|| format!("spawning build command: {}", cmd[0]))?;
-
+fn capture_transcript(mut child: std::process::Child) -> Result<(String, std::process::ExitStatus)> {
     let (tx, rx) = mpsc::channel::<String>();
 
-    // Spawn a reader thread for stdout
     let stdout = child.stdout.take().expect("stdout was piped");
     let tx_out = tx.clone();
     let stdout_thread = thread::spawn(move || {
         pipe_lines(BufReader::new(stdout), "stdout", tx_out);
     });
 
-    // Spawn a reader thread for stderr
     let stderr = child.stderr.take().expect("stderr was piped");
     let tx_err = tx;
     let stderr_thread = thread::spawn(move || {
         pipe_lines(BufReader::new(stderr), "stderr", tx_err);
     });
 
-    // Collect lines in arrival order (approximately interleaved)
-    // We must drop the transmitters by joining threads before collecting.
+    // We must join threads (dropping transmitters) before collecting.
     stdout_thread.join().expect("stdout reader thread panicked");
     stderr_thread.join().expect("stderr reader thread panicked");
 
@@ -712,6 +661,24 @@ fn run_build_command(cmd: &[String]) -> Result<String> {
     }
 
     let status = child.wait().context("waiting for build command")?;
+    Ok((transcript, status))
+}
+
+/// Run the user's build command, capturing interleaved stdout and stderr
+/// with timestamps for forensic value.
+fn run_build_command(cmd: &[String]) -> Result<String> {
+    if cmd.is_empty() {
+        anyhow::bail!("No build command specified");
+    }
+
+    let child = Command::new(&cmd[0])
+        .args(&cmd[1..])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .with_context(|| format!("spawning build command: {}", cmd[0]))?;
+
+    let (transcript, status) = capture_transcript(child)?;
     if !status.success() {
         anyhow::bail!(
             "Build command failed with exit code: {}",
