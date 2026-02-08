@@ -6,6 +6,63 @@ VBW creates tamper-evident records proving that specific source code, built with
 
 ---
 
+## The Problem: You Can't Prove What Built Your Software
+
+When someone downloads your software, they trust that the binary matches the source code. But how would they verify that? Today, most projects ship artifacts with no proof of origin. The gap between "source code on GitHub" and "binary on your machine" is a black box — and attackers know it. Supply chain attacks (SolarWinds, codecov, event-stream) exploit exactly this gap.
+
+## How Teams Normally Handle This
+
+The industry has responded with several approaches. Here's what conventional best practice looks like:
+
+| Approach | What It Does | Limitations |
+|----------|-------------|-------------|
+| **Sigstore / cosign** | Signs artifacts using ephemeral OIDC keys; records signatures in a transparency log | Requires an external transparency log service (Rekor). Signatures prove *who* signed, not *how* it was built. No environment or dependency capture. |
+| **SLSA Framework** | Defines 4 levels of supply chain security maturity; provenance metadata via in-toto attestations | Provenance is a separate attestation stored in a registry, not alongside the artifact. Achieving Level 3+ requires a hardened build platform. Complex to adopt. |
+| **in-toto** | Defines a layout of expected build steps; each step produces a signed "link" attestation | Powerful but heavyweight — requires defining a full layout of steps, functionaries, and inspection rules before you start. Designed for multi-party pipelines, not single-team builds. |
+| **Reproducible Builds** | Ensures identical source produces byte-identical output | Extremely difficult to achieve in practice. Many build tools embed timestamps, paths, or randomness. Proves *reproducibility* but not *provenance*. |
+| **GPG-signed tags/releases** | Developer signs a git tag or release archive with their GPG key | Proves who signed, not what environment built it. No artifact hashing, no dependency capture, no build transcript. Key management is painful. |
+
+These are good tools. VBW doesn't replace them — it addresses a gap they leave open.
+
+## What VBW Does Differently
+
+VBW is a **build-time witness** — it wraps your existing build command, captures everything that happened, and packages the evidence into a single portable bundle that ships alongside your artifacts. No external services required.
+
+Here's what makes it distinct:
+
+### 1. The witness bundle is self-contained and ships with your code
+
+Conventional tools store provenance in a separate registry, transparency log, or attestation store. VBW produces a `vbw/` directory that lives right next to your build output. Anyone with the bundle can verify it — no network calls, no registry lookups, no accounts.
+
+### 2. It captures the full build context, not just a signature
+
+Most signing tools answer "who signed this?" VBW answers six questions: **what source** was built, **what tools** compiled it, **what OS/container** ran the build, **what dependencies** were locked, **what artifacts** were produced, and **who attested** to all of it. Every answer is hashed and signed together.
+
+### 3. It works with any build system, right now
+
+No layout files to define. No build platform to migrate to. No SLSA level to achieve first. Run `scqcs vbw build -- npm run build` and you get a complete witness bundle. Works with npm, Cargo, Go, Make, or a plain `cp` command.
+
+### 4. Progressive reproducibility — declare what you can, prove what you do
+
+Instead of requiring full determinism (which most projects can't achieve), VBW defines three modes:
+- **Mode A** (Deterministic) — no network, pinned tools, byte-identical output
+- **Mode B** (Locked Network) — dependencies from lockfiles, practical for most teams
+- **Mode C** (Witnessed Non-Deterministic) — full provenance without a reproducibility guarantee
+
+You pick the mode that matches your reality. The bundle honestly records which mode was declared.
+
+### 5. Human-readable, auditable, no special tooling to inspect
+
+Every file in the bundle is plain JSON. You can `cat manifest.json` and read it. You can diff two bundles with standard tools. You can write your own verifier in any language. The format is not a binary blob or a protobuf — it's designed for humans and machines equally.
+
+## Why This Matters
+
+If you ship software and can't answer "prove this binary came from that commit" — VBW gives you that answer in one command. If you already use Sigstore or SLSA, VBW complements them by capturing the build context those tools don't record.
+
+The goal is not to replace the ecosystem. It's to make build provenance **accessible enough that small teams actually use it** instead of treating it as a someday problem.
+
+---
+
 ## Status
 
 VBW v1.0 is a **working implementation** — the CLI builds, signs, and verifies real bundles. The core pipeline (hashing, signing, verification) is production-grade cryptography.
@@ -32,16 +89,14 @@ VBW v1.0 is a **working implementation** — the CLI builds, signs, and verifies
 
 ---
 
-## Why VBW Exists
+## At a Glance: What a VBW Bundle Answers
 
-When you download software, you trust that the binary matches the source code. But how do you *prove* it? VBW answers six questions about every build:
-
-| Question | VBW Answer |
+| Question | How VBW Answers It |
 |----------|------------|
 | What exact source was built? | Git commit hash + canonical source tree hash |
 | What tools compiled it? | Compiler/runtime versions captured in `environment.json` |
 | What OS/container ran the build? | OS, kernel, architecture, container digest |
-| Can this build be reproduced? | Reproducibility mode recorded (see note below) |
+| Can this build be reproduced? | Reproducibility mode recorded (Mode A/B/C) |
 | Has the output been tampered with? | SHA-256 hashes of every artifact in `outputs.json` |
 | Who attested to all of this? | Ed25519 signature over the manifest |
 
