@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scqcs.com/schemas/vbw/environment-1.0.schema.json",
+  "title": "SCQCS VBW Environment v1.0",
+  "type": "object",
+  "required": ["os", "tools", "reproducibility"],
+  "properties": {
+    "os": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "kernel": { "type": "string" },
+        "arch": { "type": "string" }
+      }
+    },
+    "container": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["docker", "oci", "none"] },
+        "image": { "type": "string" },
+        "image_digest": { "type": "string" }
+      },
+      "if": {
+        "properties": { "type": { "enum": ["docker", "oci"] } }
+      },
+      "then": {
+        "required": ["image_digest"]
+      }
+    },
+    "tools": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "version"],
+        "properties": {
+          "name": { "type": "string" },
+          "version": { "type": "string" },
+          "path": { "type": "string" },
+          "invocation": { "type": "string" }
+        }
+      }
+    },
+    "env": { "type": "object" },
+    "locale": { "type": "string" },
+    "timezone": { "type": "string" },
+    "reproducibility": {
+      "type": "object",
+      "required": ["mode"],
+      "properties": {
+        "mode": { "enum": ["A_DETERMINISTIC", "B_LOCKED_NETWORK", "C_WITNESSED_ND"] },
+        "source_date_epoch": { "type": "integer" },
+        "network": {
+          "type": "object",
+          "required": ["allowed"],
+          "properties": {
+            "allowed": { "type": "boolean" },
+            "allowlist": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    }
+  }
+}

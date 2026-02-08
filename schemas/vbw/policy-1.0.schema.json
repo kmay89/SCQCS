@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scqcs.com/schemas/vbw/policy-1.0.schema.json",
+  "title": "SCQCS VBW Policy v1.0",
+  "type": "object",
+  "required": ["policy_version", "requirements"],
+  "properties": {
+    "policy_version": { "const": "1.0" },
+    "requirements": {
+      "type": "object",
+      "required": ["network", "reproducibility", "materials"],
+      "properties": {
+        "network": {
+          "type": "object",
+          "required": ["allowed"],
+          "properties": {
+            "allowed": { "type": "boolean" },
+            "allowlist": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "reproducibility": {
+          "type": "object",
+          "required": ["mode"],
+          "properties": {
+            "mode": { "enum": ["A_DETERMINISTIC", "B_LOCKED_NETWORK", "C_WITNESSED_ND"] },
+            "require_source_date_epoch": { "type": "boolean" }
+          }
+        },
+        "materials": {
+          "type": "object",
+          "required": ["require_lockfile_hashes"],
+          "properties": {
+            "require_lockfile_hashes": { "type": "boolean" },
+            "require_vendor_archive_and_tree": { "type": "boolean" }
+          }
+        },
+        "signing": {
+          "type": "object",
+          "properties": {
+            "require_maintainer_cosign_for_release": { "type": "boolean" }
+          }
+        }
+      }
+    }
+  }
+}

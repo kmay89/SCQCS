@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scqcs.com/schemas/vbw/manifest-1.0.schema.json",
+  "title": "SCQCS VBW Manifest v1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "vbw_version", "build_id", "created_at", "project", "git",
+    "source_commit_tree_hash", "materials_lock_hash", "environment_hash",
+    "outputs_hash", "builder_identity", "policy_ref"
+  ],
+  "properties": {
+    "vbw_version": { "type": "string", "const": "1.0" },
+    "build_id": { "type": "string", "minLength": 8, "maxLength": 128 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "project": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "repo_url": { "type": "string", "format": "uri" },
+        "homepage": { "type": "string", "format": "uri" }
+      }
+    },
+    "git": {
+      "type": "object",
+      "required": ["commit", "dirty"],
+      "properties": {
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{7,40}$" },
+        "branch": { "type": "string" },
+        "tag": { "type": "string" },
+        "dirty": { "type": "boolean" }
+      }
+    },
+    "source_commit_tree_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "source_worktree_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "materials_lock_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "environment_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "outputs_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "builder_identity": {
+      "type": "object",
+      "required": ["key_id", "public_key_ed25519"],
+      "properties": {
+        "key_id": { "type": "string", "minLength": 3, "maxLength": 128 },
+        "public_key_ed25519": { "type": "string", "pattern": "^[A-Za-z0-9+/=]{44}$" },
+        "issuer": { "type": "string" }
+      }
+    },
+    "policy_ref": {
+      "type": "object",
+      "required": ["path", "hash_sha256"],
+      "properties": {
+        "path": { "type": "string" },
+        "hash_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "notes": { "type": "string", "maxLength": 4096 },
+    "ext": { "type": "object" }
+  }
+}
