@@ -41,13 +41,12 @@ Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
 ### Content Security Policy
 ```
-Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
+Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
 ```
 
 **CSP Best Practices:**
 - Define CSP in HTTP headers only (not meta tags) - single source of truth
-- Remove `'unsafe-inline'` from `script-src` by using external JS files
-- `'unsafe-inline'` for `style-src` is acceptable (lower risk than scripts)
+- No `'unsafe-inline'` in `script-src` or `style-src` — all styles and scripts are in external files
 - Use `upgrade-insecure-requests` to auto-upgrade HTTP to HTTPS
 
 ### Permissions Policy

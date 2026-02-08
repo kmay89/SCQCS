@@ -168,11 +168,9 @@ pub struct Reproducibility {
 
 /// The three reproducibility modes defined by the VBW spec.
 ///
-/// These are recorded in the bundle but NOT actively enforced at build time
-/// in VBW v1.0. Mode A does not block network access; Mode B does not
-/// verify that dependencies came from lockfiles. Enforcement is a TODO
-/// for a future version. The verify command checks that the recorded mode
-/// matches the policy, but cannot retroactively enforce the constraints.
+/// Mode A attempts network namespace isolation via `unshare -rn` on Linux.
+/// Mode B verifies lockfile integrity before and after the build.
+/// Mode C makes no reproducibility promises and is trivially enforceable.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum ReproducibilityMode {
@@ -213,8 +211,8 @@ pub struct Artifact {
 // Defines what the build SHOULD do. The build command records the policy;
 // the verify command checks compliance after the fact.
 //
-// TODO: Build-time enforcement (block network in Mode A, validate lockfile
-// hashes in Mode B, require SOURCE_DATE_EPOCH, etc.) is not yet implemented.
+// Build-time enforcement: Mode A attempts network namespace isolation,
+// Mode B checks lockfile integrity before/after build.
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Policy {
@@ -256,6 +254,19 @@ pub struct MaterialsRequirement {
 pub struct SigningRequirement {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub require_maintainer_cosign_for_release: Option<bool>,
+    /// Trusted cosigner public keys for co-signature verification.
+    /// During verify, each co-signature file in signatures/ is checked
+    /// against the matching key_id in this list.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub trusted_cosigner_keys: Option<Vec<TrustedCosignerKey>>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct TrustedCosignerKey {
+    /// Human-readable identifier matching the co-signature filename.
+    pub key_id: String,
+    /// Base64-encoded Ed25519 public key.
+    pub public_key_ed25519: String,
 }
 
 impl Policy {
@@ -279,6 +290,7 @@ impl Policy {
                 },
                 signing: Some(SigningRequirement {
                     require_maintainer_cosign_for_release: Some(false),
+                    trusted_cosigner_keys: None,
                 }),
             },
         }

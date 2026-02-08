@@ -37,7 +37,18 @@
         "signing": {
           "type": "object",
           "properties": {
-            "require_maintainer_cosign_for_release": { "type": "boolean" }
+            "require_maintainer_cosign_for_release": { "type": "boolean" },
+            "trusted_cosigner_keys": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["key_id", "public_key_ed25519"],
+                "properties": {
+                  "key_id": { "type": "string" },
+                  "public_key_ed25519": { "type": "string" }
+                }
+              }
+            }
           }
         }
       }
