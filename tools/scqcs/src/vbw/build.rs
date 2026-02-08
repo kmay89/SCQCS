@@ -421,6 +421,26 @@ fn lockfile_kind(name: &str) -> &str {
 /// consumption if a build command produces excessive output (DoS protection).
 const MAX_TRANSCRIPT_BYTES: usize = 128 * 1024 * 1024;
 
+/// Read lines from a pipe, truncate overlong lines, tag with stream name
+/// and timestamp, echo to stderr, and send to the channel.
+fn pipe_lines<R: std::io::Read>(reader: BufReader<R>, stream: &str, tx: mpsc::Sender<String>) {
+    for line in reader.lines().map_while(Result::ok) {
+        let line = if line.len() > MAX_LINE_LENGTH {
+            format!(
+                "{}... [truncated, {} bytes total]",
+                &line[..MAX_LINE_LENGTH],
+                line.len()
+            )
+        } else {
+            line
+        };
+        let ts = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
+        let tagged = format!("[{}] [{}] {}", ts, stream, line);
+        eprintln!("{}", line);
+        let _ = tx.send(tagged);
+    }
+}
+
 /// Maximum length of a single line captured in the transcript (64 KiB).
 /// Prevents a single extremely long line from consuming excessive memory.
 const MAX_LINE_LENGTH: usize = 64 * 1024;
@@ -455,45 +475,14 @@ fn run_build_command(cmd: &[String]) -> Result<String> {
     let stdout = child.stdout.take().expect("stdout was piped");
     let tx_out = tx.clone();
     let stdout_thread = thread::spawn(move || {
-        let reader = BufReader::new(stdout);
-        for line in reader.lines().map_while(Result::ok) {
-            // Truncate excessively long lines to prevent memory abuse
-            let line = if line.len() > MAX_LINE_LENGTH {
-                format!(
-                    "{}... [truncated, {} bytes total]",
-                    &line[..MAX_LINE_LENGTH],
-                    line.len()
-                )
-            } else {
-                line
-            };
-            let ts = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
-            let tagged = format!("[{}] [stdout] {}", ts, line);
-            eprintln!("{}", line);
-            let _ = tx_out.send(tagged);
-        }
+        pipe_lines(BufReader::new(stdout), "stdout", tx_out);
     });
 
     // Spawn a reader thread for stderr
     let stderr = child.stderr.take().expect("stderr was piped");
     let tx_err = tx;
     let stderr_thread = thread::spawn(move || {
-        let reader = BufReader::new(stderr);
-        for line in reader.lines().map_while(Result::ok) {
-            let line = if line.len() > MAX_LINE_LENGTH {
-                format!(
-                    "{}... [truncated, {} bytes total]",
-                    &line[..MAX_LINE_LENGTH],
-                    line.len()
-                )
-            } else {
-                line
-            };
-            let ts = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
-            let tagged = format!("[{}] [stderr] {}", ts, line);
-            eprintln!("{}", line);
-            let _ = tx_err.send(tagged);
-        }
+        pipe_lines(BufReader::new(stderr), "stderr", tx_err);
     });
 
     // Collect lines in arrival order (approximately interleaved)

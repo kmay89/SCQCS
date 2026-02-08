@@ -36,18 +36,22 @@ pub fn sign(secret_key_b64: &str, data: &[u8]) -> Result<String> {
     let mut sk_bytes = B64
         .decode(secret_key_b64)
         .context("decoding secret key base64")?;
-    let result = (|| {
-        let mut sk_array: [u8; 32] = sk_bytes
-            .clone()
-            .try_into()
-            .map_err(|_| anyhow::anyhow!("secret key must be 32 bytes"))?;
-        let signing_key = SigningKey::from_bytes(&sk_array);
-        let sig = signing_key.sign(data);
-        sk_array.zeroize();
-        Ok(B64.encode(sig.to_bytes()))
-    })();
+
+    if sk_bytes.len() != 32 {
+        let len = sk_bytes.len();
+        sk_bytes.zeroize();
+        anyhow::bail!("secret key must be 32 bytes, but was {} bytes", len);
+    }
+
+    let mut sk_array = [0u8; 32];
+    sk_array.copy_from_slice(&sk_bytes);
     sk_bytes.zeroize();
-    result
+
+    let signing_key = SigningKey::from_bytes(&sk_array);
+    let sig = signing_key.sign(data);
+    sk_array.zeroize();
+
+    Ok(B64.encode(sig.to_bytes()))
 }
 
 /// Verify an Ed25519 signature.
@@ -106,16 +110,20 @@ pub fn public_key_from_secret(secret_key_b64: &str) -> Result<String> {
     let mut sk_bytes = B64
         .decode(secret_key_b64)
         .context("decoding secret key base64")?;
-    let result = (|| {
-        let mut sk_array: [u8; 32] = sk_bytes
-            .clone()
-            .try_into()
-            .map_err(|_| anyhow::anyhow!("secret key must be 32 bytes"))?;
-        let signing_key = SigningKey::from_bytes(&sk_array);
-        let verifying_key = signing_key.verifying_key();
-        sk_array.zeroize();
-        Ok(B64.encode(verifying_key.to_bytes()))
-    })();
+
+    if sk_bytes.len() != 32 {
+        let len = sk_bytes.len();
+        sk_bytes.zeroize();
+        anyhow::bail!("secret key must be 32 bytes, but was {} bytes", len);
+    }
+
+    let mut sk_array = [0u8; 32];
+    sk_array.copy_from_slice(&sk_bytes);
     sk_bytes.zeroize();
-    result
+
+    let signing_key = SigningKey::from_bytes(&sk_array);
+    let verifying_key = signing_key.verifying_key();
+    sk_array.zeroize();
+
+    Ok(B64.encode(verifying_key.to_bytes()))
 }
