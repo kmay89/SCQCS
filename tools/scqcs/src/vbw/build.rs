@@ -448,7 +448,7 @@ fn run_build_command(cmd: &[String]) -> Result<String> {
         for line in reader.lines().map_while(Result::ok) {
             let ts = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
             let tagged = format!("[{}] [stdout] {}", ts, line);
-            eprint!("{}\r\n", line);
+            eprintln!("{}", line);
             let _ = tx_out.send(tagged);
         }
     });
@@ -461,7 +461,7 @@ fn run_build_command(cmd: &[String]) -> Result<String> {
         for line in reader.lines().map_while(Result::ok) {
             let ts = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
             let tagged = format!("[{}] [stderr] {}", ts, line);
-            eprint!("{}\r\n", line);
+            eprintln!("{}", line);
             let _ = tx_err.send(tagged);
         }
     });
