@@ -5,5 +5,6 @@
 // verify.rs — Verify command: check hashes, signature, policy compliance
 
 pub mod build;
+pub mod canonical;
 pub mod model;
 pub mod verify;

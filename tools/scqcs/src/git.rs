@@ -78,8 +78,8 @@ pub fn source_worktree_hash() -> Result<String> {
     for file in &files {
         let path = std::path::Path::new(file);
         if path.exists() {
-            let contents = std::fs::read(path)
-                .with_context(|| format!("reading worktree file {}", file))?;
+            let contents =
+                std::fs::read(path).with_context(|| format!("reading worktree file {}", file))?;
             let file_hash = crate::hash::sha256_hex(&contents);
             hasher.update(file.as_bytes());
             hasher.update(b"\0");

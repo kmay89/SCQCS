@@ -17,8 +17,11 @@ use serde::{Deserialize, Serialize};
 // The root document of a witness bundle. Contains hashes of all other files,
 // git state, builder identity, and the policy reference. This is the file
 // that gets signed.
+//
+// SIGNING: The Ed25519 signature covers canonical_manifest_bytes(&manifest),
+// NOT the pretty-printed JSON on disk. See canonical.rs for the canonical form.
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Manifest {
     pub vbw_version: String,
     pub build_id: String,
@@ -38,6 +41,10 @@ pub struct Manifest {
     pub outputs_hash: String,
     pub builder_identity: BuilderIdentity,
     pub policy_ref: PolicyRef,
+    /// Records what the build tool actually enforced vs. what was requested.
+    /// Always present in bundles produced by VBW v1.0+.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enforcement: Option<Enforcement>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub notes: Option<String>,
     /// Extension point for custom fields. Not used by VBW v1.0.
@@ -45,7 +52,7 @@ pub struct Manifest {
     pub ext: Option<serde_json::Value>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Project {
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -54,7 +61,7 @@ pub struct Project {
     pub homepage: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GitRef {
     pub commit: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -64,7 +71,7 @@ pub struct GitRef {
     pub dirty: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BuilderIdentity {
     /// Human-readable identifier (e.g. "builder@ci", "alice@example.com").
     pub key_id: String,
@@ -74,10 +81,31 @@ pub struct BuilderIdentity {
     pub issuer: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PolicyRef {
     pub path: String,
     pub hash_sha256: String,
+}
+
+// ── Enforcement ─────────────────────────────────────────────────────────────
+// Records what the build tool actually enforced at build time.
+// This is critical for honesty: if Mode A was requested but the tool
+// cannot enforce network isolation, this struct says so explicitly.
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Enforcement {
+    /// The reproducibility mode that was requested by policy.
+    pub mode_requested: ReproducibilityMode,
+    /// Whether the requested mode's constraints were actually enforced.
+    /// false for Mode A and Mode B in VBW v1.0 (enforcement not implemented).
+    pub mode_enforced: bool,
+    /// Whether network access was actually blocked during the build.
+    pub network_blocked: bool,
+    /// Whether SOURCE_DATE_EPOCH was set in the build environment.
+    pub source_date_epoch_set: bool,
+    /// Human-readable explanation of enforcement gaps.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
 }
 
 // ── Environment ─────────────────────────────────────────────────────────────
