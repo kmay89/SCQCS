@@ -23,7 +23,7 @@
 //   - Schema validation of JSON files against the published schemas
 
 use anyhow::{Context, Result};
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -31,6 +31,9 @@ use crate::hash;
 use crate::sign;
 use crate::vbw::canonical;
 use crate::vbw::model::*;
+
+/// Maximum directory traversal depth to prevent symlink cycle DoS.
+const MAX_WALK_DEPTH: usize = 16;
 
 #[derive(Debug, PartialEq)]
 pub enum Verdict {
@@ -171,27 +174,30 @@ pub fn run_verify(bundle_dir: &Path) -> Result<Verdict> {
         "environment.json",
         &manifest.environment_hash,
         &mut errors,
-        |data| {
-            components.environment = serde_json::from_str(data).ok();
-        },
+        &mut warnings,
+        |data| serde_json::from_str::<Environment>(data).map(|v| {
+            components.environment = Some(v);
+        }),
     );
     verify_and_parse_component(
         &canonical_bundle,
         "materials.lock.json",
         &manifest.materials_lock_hash,
         &mut errors,
-        |data| {
-            components.materials_lock = serde_json::from_str(data).ok();
-        },
+        &mut warnings,
+        |data| serde_json::from_str::<MaterialsLock>(data).map(|v| {
+            components.materials_lock = Some(v);
+        }),
     );
     verify_and_parse_component(
         &canonical_bundle,
         "outputs.json",
         &manifest.outputs_hash,
         &mut errors,
-        |data| {
-            components.outputs = serde_json::from_str(data).ok();
-        },
+        &mut warnings,
+        |data| serde_json::from_str::<Outputs>(data).map(|v| {
+            components.outputs = Some(v);
+        }),
     );
 
     // 10. Verify policy reference
@@ -206,22 +212,57 @@ pub fn run_verify(bundle_dir: &Path) -> Result<Verdict> {
     } else {
         eprintln!("[vbw] Policy hash: OK");
     }
-    components.policy = serde_json::from_str(&policy_data).ok();
+    match serde_json::from_str::<Policy>(&policy_data) {
+        Ok(p) => components.policy = Some(p),
+        Err(e) => warnings.push(format!(
+            "policy.json passed hash check but failed to parse: {} (policy compliance checks skipped)",
+            e
+        )),
+    }
 
     // 11. Verify output artifacts exist and match
     if let Some(ref outputs) = components.outputs {
         for artifact in &outputs.artifacts {
-            // Path safety: reject paths with .. or absolute paths
-            if artifact.path.contains("..") {
+            let artifact_path = PathBuf::from(&artifact.path);
+
+            // Path safety: reject absolute paths
+            if artifact_path.is_absolute() {
                 errors.push(format!(
-                    "Artifact path contains '..': {} (path traversal rejected)",
+                    "Artifact path is absolute: {} (path traversal rejected)",
                     artifact.path
                 ));
                 continue;
             }
 
-            let artifact_path = PathBuf::from(&artifact.path);
+            // Path safety: reject any path component that is ".." (traversal)
+            // Uses proper path component parsing instead of naive string search
+            // to avoid false positives on filenames like "my..file.txt"
+            if artifact_path
+                .components()
+                .any(|c| c == std::path::Component::ParentDir)
+            {
+                errors.push(format!(
+                    "Artifact path contains parent directory traversal: {} (rejected)",
+                    artifact.path
+                ));
+                continue;
+            }
+
             if artifact_path.exists() {
+                // Resolve symlinks and verify the real path doesn't escape
+                // the project directory via symlink indirection
+                if let Ok(real_path) = artifact_path.canonicalize() {
+                    if let Ok(cwd) = std::env::current_dir() {
+                        if !real_path.starts_with(&cwd) {
+                            errors.push(format!(
+                                "Artifact {} resolves outside project directory (symlink escape rejected)",
+                                artifact.path
+                            ));
+                            continue;
+                        }
+                    }
+                }
+
                 match hash::hash_file(&artifact_path) {
                     Ok(h) if h == artifact.sha256 => {}
                     Ok(h) => errors.push(format!(
@@ -303,12 +344,19 @@ fn check_unexpected_files(bundle_dir: &Path, errors: &mut Vec<String>) -> Result
                 path.strip_prefix(bundle_dir).unwrap_or(path).display()
             ));
         } else if !allowed.contains(path) {
-            // Allow additional .ed25519.sig files in signatures/ (co-signatures from attest)
-            if path.starts_with(bundle_dir.join("signatures"))
-                && path.extension().is_some_and(|ext| ext == "sig")
-            {
-                // Co-signatures are allowed but not verified in v1.0
-                continue;
+            // Allow additional co-signature files in signatures/ (from attest command).
+            // Strictly require the *.ed25519.sig naming pattern to prevent arbitrary
+            // data from being smuggled into the bundle via a .sig extension.
+            if path.starts_with(bundle_dir.join("signatures")) {
+                if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                    if name.ends_with(".ed25519.sig")
+                        && name.len() > ".ed25519.sig".len()
+                        && name.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '-' || c == '.')
+                    {
+                        // Co-signatures are allowed but not verified in v1.0
+                        continue;
+                    }
+                }
             }
             errors.push(format!(
                 "Unexpected file in bundle: {}",
@@ -347,14 +395,45 @@ fn check_symlink_safety(bundle_dir: &Path, errors: &mut Vec<String>) -> Result<(
 }
 
 /// Recursively walk a directory and return all entries (files and dirs).
+///
+/// Protects against symlink cycle DoS attacks by:
+///   1. Limiting recursion depth to MAX_WALK_DEPTH
+///   2. Tracking visited directories by canonical path to detect cycles
 fn walk_dir(dir: &Path) -> Result<Vec<PathBuf>> {
+    let mut visited = HashSet::new();
+    walk_dir_inner(dir, &mut visited, 0)
+}
+
+fn walk_dir_inner(
+    dir: &Path,
+    visited: &mut HashSet<PathBuf>,
+    depth: usize,
+) -> Result<Vec<PathBuf>> {
+    if depth > MAX_WALK_DEPTH {
+        anyhow::bail!(
+            "Directory traversal exceeded maximum depth ({}) at {} — possible symlink cycle",
+            MAX_WALK_DEPTH,
+            dir.display()
+        );
+    }
+
+    // Track visited directories by canonical path to detect symlink cycles
+    if let Ok(canonical) = dir.canonicalize() {
+        if !visited.insert(canonical) {
+            anyhow::bail!(
+                "Directory cycle detected at {} (already visited via symlink)",
+                dir.display()
+            );
+        }
+    }
+
     let mut results = Vec::new();
     for entry in fs::read_dir(dir).with_context(|| format!("reading dir {}", dir.display()))? {
         let entry = entry?;
         let path = entry.path();
         results.push(path.clone());
         if path.is_dir() {
-            results.extend(walk_dir(&path)?);
+            results.extend(walk_dir_inner(&path, visited, depth + 1)?);
         }
     }
     Ok(results)
@@ -365,9 +444,10 @@ fn verify_and_parse_component<F>(
     filename: &str,
     expected: &str,
     errors: &mut Vec<String>,
+    warnings: &mut Vec<String>,
     parse_fn: F,
 ) where
-    F: FnOnce(&str),
+    F: FnOnce(&str) -> Result<(), serde_json::Error>,
 {
     let path = bundle_dir.join(filename);
     match fs::read_to_string(&path) {
@@ -381,7 +461,12 @@ fn verify_and_parse_component<F>(
             } else {
                 eprintln!("[vbw] {}: OK", filename);
             }
-            parse_fn(&data);
+            if let Err(e) = parse_fn(&data) {
+                warnings.push(format!(
+                    "{} passed hash check but failed to parse: {} (related checks skipped)",
+                    filename, e
+                ));
+            }
         }
         Err(e) => errors.push(format!("Cannot read {}: {}", filename, e)),
     }

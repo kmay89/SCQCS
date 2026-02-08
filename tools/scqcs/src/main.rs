@@ -63,6 +63,13 @@ fn cmd_keygen(output: Option<PathBuf>) -> Result<()> {
     let pk_path = dir.join("vbw-builder.pk");
 
     fs::write(&sk_path, &sk)?;
+    // Restrict secret key file permissions to owner-only (0600) on Unix.
+    // Prevents other users on the system from reading the signing key.
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(&sk_path, fs::Permissions::from_mode(0o600))?;
+    }
     fs::write(&pk_path, &pk)?;
 
     eprintln!("Ed25519 keypair generated:");
@@ -71,8 +78,9 @@ fn cmd_keygen(output: Option<PathBuf>) -> Result<()> {
     eprintln!();
     eprintln!("Public key (base64): {}", pk);
     eprintln!();
-    eprintln!("To use in CI, set the secret key as:");
-    eprintln!("  SCQCS_VBW_ED25519_SK_B64={}", sk);
+    eprintln!("SECURITY: Copy the secret key value to a secure location (e.g. CI secret),");
+    eprintln!("then verify the .sk file permissions are restricted.");
+    eprintln!("  SCQCS_VBW_ED25519_SK_B64=<contents of {}>", sk_path.display());
 
     Ok(())
 }
@@ -98,10 +106,32 @@ fn cmd_attest(
     let sig_dir = bundle.join("signatures");
     fs::create_dir_all(&sig_dir)?;
 
-    let sig_filename = format!(
-        "{}.ed25519.sig",
-        resolved_key_id.replace(['@', '/', '\\'], "_")
-    );
+    // Sanitize key_id for use as a filename: whitelist alphanumeric, hyphen,
+    // underscore, and dot. Replace all other characters (including path separators,
+    // shell metacharacters, and control characters) with underscore.
+    let sanitized_id: String = resolved_key_id
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '-' || c == '_' || c == '.' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect();
+
+    // Reject empty or dot-only filenames that could cause filesystem issues
+    let sanitized_id = if sanitized_id.is_empty()
+        || sanitized_id == "."
+        || sanitized_id == ".."
+        || sanitized_id.starts_with('.')
+    {
+        format!("key_{}", sanitized_id)
+    } else {
+        sanitized_id
+    };
+
+    let sig_filename = format!("{}.ed25519.sig", sanitized_id);
     let sig_path = sig_dir.join(&sig_filename);
     fs::write(&sig_path, &signature)?;
 
