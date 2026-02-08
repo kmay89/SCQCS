@@ -47,7 +47,7 @@ No layout files to define. No build platform to migrate to. No SLSA level to ach
 Instead of requiring full determinism (which most projects can't achieve), VBW defines three modes:
 - **Mode A** (Deterministic) — no network, pinned tools, byte-identical output
 - **Mode B** (Locked Network) — dependencies from lockfiles, practical for most teams
-- **Mode C** (Witnessed) — full provenance without a reproducibility guarantee
+- **Mode C** (Witnessed Non-Deterministic) — full provenance without a reproducibility guarantee
 
 You pick the mode that matches your reality. The bundle honestly records which mode was declared.
 
