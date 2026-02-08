@@ -12,6 +12,7 @@ use base64::engine::general_purpose::STANDARD as B64;
 use base64::Engine;
 use ed25519_dalek::{Signer, SigningKey, Verifier, VerifyingKey};
 use std::path::Path;
+use zeroize::Zeroize;
 
 /// Generate a new Ed25519 keypair using OS randomness.
 /// Returns (secret_key_base64, public_key_base64).
@@ -28,16 +29,25 @@ pub fn keygen() -> (String, String) {
 /// Sign arbitrary data with an Ed25519 secret key.
 /// The secret key is a base64-encoded 32-byte seed.
 /// Returns the signature as base64.
+///
+/// Intermediate secret key bytes are zeroized after use to limit
+/// the window during which key material exists in memory.
 pub fn sign(secret_key_b64: &str, data: &[u8]) -> Result<String> {
-    let sk_bytes = B64
+    let mut sk_bytes = B64
         .decode(secret_key_b64)
         .context("decoding secret key base64")?;
-    let sk_array: [u8; 32] = sk_bytes
-        .try_into()
-        .map_err(|_| anyhow::anyhow!("secret key must be 32 bytes"))?;
-    let signing_key = SigningKey::from_bytes(&sk_array);
-    let sig = signing_key.sign(data);
-    Ok(B64.encode(sig.to_bytes()))
+    let result = (|| {
+        let mut sk_array: [u8; 32] = sk_bytes
+            .clone()
+            .try_into()
+            .map_err(|_| anyhow::anyhow!("secret key must be 32 bytes"))?;
+        let signing_key = SigningKey::from_bytes(&sk_array);
+        let sig = signing_key.sign(data);
+        sk_array.zeroize();
+        Ok(B64.encode(sig.to_bytes()))
+    })();
+    sk_bytes.zeroize();
+    result
 }
 
 /// Verify an Ed25519 signature.
@@ -90,14 +100,22 @@ pub fn load_secret_key(keyfile: Option<&Path>) -> Result<String> {
 
 /// Derive the public key from a secret key.
 /// Both are base64-encoded.
+///
+/// Intermediate secret key bytes are zeroized after use.
 pub fn public_key_from_secret(secret_key_b64: &str) -> Result<String> {
-    let sk_bytes = B64
+    let mut sk_bytes = B64
         .decode(secret_key_b64)
         .context("decoding secret key base64")?;
-    let sk_array: [u8; 32] = sk_bytes
-        .try_into()
-        .map_err(|_| anyhow::anyhow!("secret key must be 32 bytes"))?;
-    let signing_key = SigningKey::from_bytes(&sk_array);
-    let verifying_key = signing_key.verifying_key();
-    Ok(B64.encode(verifying_key.to_bytes()))
+    let result = (|| {
+        let mut sk_array: [u8; 32] = sk_bytes
+            .clone()
+            .try_into()
+            .map_err(|_| anyhow::anyhow!("secret key must be 32 bytes"))?;
+        let signing_key = SigningKey::from_bytes(&sk_array);
+        let verifying_key = signing_key.verifying_key();
+        sk_array.zeroize();
+        Ok(B64.encode(verifying_key.to_bytes()))
+    })();
+    sk_bytes.zeroize();
+    result
 }

@@ -417,6 +417,14 @@ fn lockfile_kind(name: &str) -> &str {
     }
 }
 
+/// Maximum transcript size in bytes (128 MiB). Prevents unbounded memory
+/// consumption if a build command produces excessive output (DoS protection).
+const MAX_TRANSCRIPT_BYTES: usize = 128 * 1024 * 1024;
+
+/// Maximum length of a single line captured in the transcript (64 KiB).
+/// Prevents a single extremely long line from consuming excessive memory.
+const MAX_LINE_LENGTH: usize = 64 * 1024;
+
 /// Run the user's build command, capturing interleaved stdout and stderr
 /// with timestamps for forensic value.
 ///
@@ -426,6 +434,9 @@ fn lockfile_kind(name: &str) -> &str {
 ///
 /// Lines from both streams are collected via a channel and written in
 /// arrival order, which approximates true interleaving.
+///
+/// The transcript is capped at MAX_TRANSCRIPT_BYTES to prevent memory
+/// exhaustion from pathological build output.
 fn run_build_command(cmd: &[String]) -> Result<String> {
     if cmd.is_empty() {
         anyhow::bail!("No build command specified");
@@ -446,6 +457,16 @@ fn run_build_command(cmd: &[String]) -> Result<String> {
     let stdout_thread = thread::spawn(move || {
         let reader = BufReader::new(stdout);
         for line in reader.lines().map_while(Result::ok) {
+            // Truncate excessively long lines to prevent memory abuse
+            let line = if line.len() > MAX_LINE_LENGTH {
+                format!(
+                    "{}... [truncated, {} bytes total]",
+                    &line[..MAX_LINE_LENGTH],
+                    line.len()
+                )
+            } else {
+                line
+            };
             let ts = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
             let tagged = format!("[{}] [stdout] {}", ts, line);
             eprintln!("{}", line);
@@ -459,6 +480,15 @@ fn run_build_command(cmd: &[String]) -> Result<String> {
     let stderr_thread = thread::spawn(move || {
         let reader = BufReader::new(stderr);
         for line in reader.lines().map_while(Result::ok) {
+            let line = if line.len() > MAX_LINE_LENGTH {
+                format!(
+                    "{}... [truncated, {} bytes total]",
+                    &line[..MAX_LINE_LENGTH],
+                    line.len()
+                )
+            } else {
+                line
+            };
             let ts = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
             let tagged = format!("[{}] [stderr] {}", ts, line);
             eprintln!("{}", line);
@@ -472,9 +502,23 @@ fn run_build_command(cmd: &[String]) -> Result<String> {
     stderr_thread.join().expect("stderr reader thread panicked");
 
     let mut transcript = String::new();
+    let mut truncated = false;
     for line in rx.iter() {
+        if transcript.len() + line.len() + 1 > MAX_TRANSCRIPT_BYTES {
+            truncated = true;
+            break;
+        }
         transcript.push_str(&line);
         transcript.push('\n');
+    }
+    if truncated {
+        let msg = format!(
+            "\n[vbw] TRANSCRIPT TRUNCATED at {} bytes (limit: {} bytes)\n",
+            transcript.len(),
+            MAX_TRANSCRIPT_BYTES
+        );
+        transcript.push_str(&msg);
+        eprintln!("{}", msg.trim());
     }
 
     let status = child.wait().context("waiting for build command")?;
