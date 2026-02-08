@@ -31,12 +31,14 @@ jobs:
 
       - name: Create dist directory
         run: |
-          mkdir -p dist
+          mkdir -p dist/assets
           cp index.html dist/
           cp main.js dist/
+          cp 404.html dist/
           cp style.css dist/ 2>/dev/null || true
-          cp -r *.png *.jpeg *.ico *.mp4 *.gif *.webmanifest dist/ 2>/dev/null || true
-          cp robots.txt sitemap.xml humans.txt llms.txt dist/ 2>/dev/null || true
+          cp -r assets/* dist/assets/ 2>/dev/null || true
+          cp site.webmanifest dist/ 2>/dev/null || true
+          cp robots.txt sitemap.xml humans.txt llms.txt security.txt dist/ 2>/dev/null || true
           cp _headers _redirects dist/ 2>/dev/null || true
           cp -r .well-known dist/ 2>/dev/null || true
 

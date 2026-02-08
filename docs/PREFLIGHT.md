@@ -41,7 +41,7 @@ grep -r -i "lorem ipsum\|dolor sit amet" --include="*.html" .
 ### Required Files
 ```bash
 # Check all required files exist
-for file in index.html 404.html robots.txt sitemap.xml _headers favicon.ico; do
+for file in index.html 404.html robots.txt sitemap.xml _headers assets/favicon.ico; do
   [ -f "$file" ] && echo "✓ $file" || echo "✗ $file MISSING"
 done
 ```
@@ -57,7 +57,7 @@ done
 ### Favicon Set
 ```bash
 # Check favicon files
-for file in favicon.ico favicon-16x16.png favicon-32x32.png apple-touch-icon.png android-chrome-192x192.png android-chrome-512x512.png site.webmanifest; do
+for file in assets/favicon.ico assets/favicon-16x16.png assets/favicon-32x32.png assets/apple-touch-icon.png assets/android-chrome-192x192.png assets/android-chrome-512x512.png site.webmanifest; do
   [ -f "$file" ] && echo "✓ $file" || echo "✗ $file MISSING"
 done
 ```

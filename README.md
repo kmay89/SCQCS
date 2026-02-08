@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="scqcs-poster.jpeg" alt="SCQCS Logo" width="400">
+  <img src="assets/scqcs-poster.jpeg" alt="SCQCS Logo" width="400">
 </p>
 
 <h1 align="center">SCQCS</h1>
@@ -77,10 +77,10 @@ Everything you need. Nothing you don't.
 | `llms.txt` | Helps AI assistants understand your site |
 | `sitemap.xml` | Improves your SEO automatically |
 | `site.webmanifest` | Makes your site installable as an app |
-| `GETTING_STARTED.md` | Detailed walkthrough if you need more help |
-| `PREFLIGHT.md` | Quick runnable checks before every deploy |
-| `SITE_SECURITY_CHECKLIST.md` | Comprehensive security reference |
-| [`VBW.md`](VBW.md) | Verified Build Witness — cryptographic build provenance |
+| [`GETTING_STARTED.md`](docs/GETTING_STARTED.md) | Detailed walkthrough if you need more help |
+| [`PREFLIGHT.md`](docs/PREFLIGHT.md) | Quick runnable checks before every deploy |
+| [`SITE_SECURITY_CHECKLIST.md`](docs/SITE_SECURITY_CHECKLIST.md) | Comprehensive security reference |
+| [`VBW.md`](docs/VBW.md) | Verified Build Witness — cryptographic build provenance |
 
 ### Security You Get For Free
 
@@ -131,7 +131,7 @@ That's okay! Here's what the buttons do:
 
 ### New to Netlify?
 
-Read [`GETTING_STARTED.md`](GETTING_STARTED.md) — it walks you through everything with screenshots.
+Read [`GETTING_STARTED.md`](docs/GETTING_STARTED.md) — it walks you through everything with screenshots.
 
 ### Something broken?
 
