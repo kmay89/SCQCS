@@ -6,7 +6,7 @@ Thanks for your interest in contributing to SCQCS.
 
 ### Report Issues
 - Website bugs or broken links
-- Security concerns (see [security.txt](/.well-known/security.txt))
+- Security concerns (see [security.txt](../.well-known/security.txt))
 - Documentation errors or unclear language
 
 ### Suggest Improvements

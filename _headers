@@ -33,19 +33,12 @@
 /*.js
   Cache-Control: public, max-age=31536000, immutable
 
-/*.png
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.jpeg
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.jpg
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.ico
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.mp4
+/assets/*.png
+/assets/*.jpeg
+/assets/*.jpg
+/assets/*.gif
+/assets/*.ico
+/assets/*.mp4
   Cache-Control: public, max-age=31536000, immutable
 
 /*.webmanifest

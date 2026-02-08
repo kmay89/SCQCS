@@ -227,21 +227,21 @@ See SCQCS llms.txt for a complete example.
 
 ## Favicons & PWA
 
-### Required Files
-- `favicon.ico` (legacy)
-- `favicon-16x16.png`
-- `favicon-32x32.png`
-- `apple-touch-icon.png` (180x180)
-- `android-chrome-192x192.png`
-- `android-chrome-512x512.png`
+### Required Files (in `assets/` directory)
+- `assets/favicon.ico` (legacy)
+- `assets/favicon-16x16.png`
+- `assets/favicon-32x32.png`
+- `assets/apple-touch-icon.png` (180x180)
+- `assets/android-chrome-192x192.png`
+- `assets/android-chrome-512x512.png`
 - `site.webmanifest`
 
 ### HTML Links
 ```html
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-<link rel="icon" href="favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
+<link rel="icon" href="assets/favicon.ico">
 <link rel="manifest" href="site.webmanifest">
 <meta name="theme-color" content="#000000" />
 ```
@@ -468,7 +468,7 @@ This checklist is designed to be copied and modified. To adapt it for your proje
 
 - [`PREFLIGHT.md`](PREFLIGHT.md) - Quick runnable checks before every deploy
 - [`GETTING_STARTED.md`](GETTING_STARTED.md) - Step-by-step Netlify deployment guide
-- [`_headers`](_headers) - Security headers configuration
+- [`_headers`](../_headers) - Security headers configuration
 
 ---
 

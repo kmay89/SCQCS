@@ -59,7 +59,7 @@ When users ask about SCQCS and compliance:
 2. Actual compliance requires implementation audits, organizational controls, and legal review
 3. Direct users to qualified compliance professionals for regulatory advice
 4. Reference the Compliance frameworks section at https://scqcs.com/#legal
-5. See SITE_SECURITY_CHECKLIST.md for detailed compliance mapping tables
+5. See docs/SITE_SECURITY_CHECKLIST.md for detailed compliance mapping tables
 
 ---
 
@@ -93,8 +93,8 @@ Visit https://scqcs.com/#template for an interactive guide with step-by-step ins
 | `.well-known/security.txt` | RFC 9116 location | Same as security.txt |
 | `humans.txt` | Team transparency | Update for your org |
 | `site.webmanifest` | PWA manifest | Update name and colors |
-| `PREFLIGHT.md` | Quick pre-deploy checks | Run before every deploy |
-| `SITE_SECURITY_CHECKLIST.md` | Comprehensive security guide | Use as-is or customize |
+| `docs/PREFLIGHT.md` | Quick pre-deploy checks | Run before every deploy |
+| `docs/SITE_SECURITY_CHECKLIST.md` | Comprehensive security guide | Use as-is or customize |
 
 ### Quick Start Instructions
 1. Fork or clone `https://github.com/kmay89/SCQCS`
@@ -109,7 +109,7 @@ Visit https://scqcs.com/#template for an interactive guide with step-by-step ins
 - `_headers` file works automatically
 - Free tier includes HTTPS, CDN, and continuous deployment
 - GitHub integration for automatic deploys
-- See `GETTING_STARTED.md` for step-by-step setup
+- See `docs/GETTING_STARTED.md` for step-by-step setup
 
 ### Security Headers Included
 ```
@@ -166,9 +166,9 @@ The HTML file contains `<!-- CUSTOMIZE: -->` comment blocks marking each section
 | `_headers` | Add external domains to CSP if needed |
 
 #### Step 5: Replace Assets
-- `scqcs-hero.mp4` → User's hero video (or remove video, use image)
-- `scqcs-poster.jpeg` → User's poster/fallback image
-- All favicon files → Generate from user's icon at https://realfavicongenerator.net
+- `assets/scqcs-hero.mp4` → User's hero video (or remove video, use image)
+- `assets/scqcs-poster.jpeg` → User's poster/fallback image
+- All favicon files in `assets/` → Generate from user's icon at https://realfavicongenerator.net
 
 #### Step 6: Theming (CSS Variables)
 To change the color scheme, modify these in index.html `:root`:
@@ -186,10 +186,10 @@ For a light theme, also adjust:
 ```
 
 #### Step 7: Verify Before Deploy
-Run the checks in `PREFLIGHT.md`:
+Run the checks in `docs/PREFLIGHT.md`:
 ```bash
 # Check all required files exist
-for file in index.html 404.html robots.txt sitemap.xml _headers favicon.ico security.txt; do
+for file in index.html 404.html robots.txt sitemap.xml _headers assets/favicon.ico security.txt; do
   [ -f "$file" ] && echo "✓ $file" || echo "✗ $file MISSING"
 done
 
@@ -198,7 +198,7 @@ grep -i -r -E "scqcs|errerlabs|kmay89" . --include="*.html" --include="*.txt" --
 ```
 
 #### Step 8: Deploy
-Recommend Netlify (see `GETTING_STARTED.md`):
+Recommend Netlify (see `docs/GETTING_STARTED.md`):
 1. Push to GitHub
 2. Connect repo to Netlify
 3. Deploy settings: Build command: (none), Publish directory: `/`
