@@ -80,6 +80,7 @@ Everything you need. Nothing you don't.
 | `GETTING_STARTED.md` | Detailed walkthrough if you need more help |
 | `PREFLIGHT.md` | Quick runnable checks before every deploy |
 | `SITE_SECURITY_CHECKLIST.md` | Comprehensive security reference |
+| [`VBW.md`](VBW.md) | Verified Build Witness — cryptographic build provenance |
 
 ### Security You Get For Free
 
