@@ -386,7 +386,10 @@ document.addEventListener('click', (e) => {
   const href = anchor.getAttribute('href');
   if (!href || href === '#') return;
 
-  const target = document.querySelector(href);
+  // Use getElementById instead of querySelector to avoid CSS selector injection.
+  // href is guaranteed to start with '#' by the a[href^="#"] constraint above.
+  const id = href.slice(1);
+  const target = document.getElementById(id);
   if (target) {
     e.preventDefault();
     target.scrollIntoView({

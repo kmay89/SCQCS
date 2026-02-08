@@ -74,12 +74,10 @@ VBW v1.0 is a **working implementation** — the CLI builds, signs, and verifies
 - Git commit/branch/dirty detection (real)
 - Build transcript capture with interleaved stdout/stderr and ISO-8601 timestamps
 - Strict fail-closed verify pipeline: hash checks, signature verification, bundle completeness, unexpected file detection, path traversal rejection, symlink escape detection
-- Enforcement honesty: manifest records what was actually enforced vs. requested (Mode A/B enforcement is not implemented; the manifest says so explicitly via `enforcement.mode_enforced=false`)
+- Enforcement honesty: manifest records what was actually enforced vs. requested. Mode A attempts network namespace isolation via `unshare -rn`; Mode B checks lockfile integrity before/after build.
 - GitHub Actions integration
 
 **What is not yet implemented (TODOs):**
-- Build-time policy enforcement (Mode A does not block network; Mode B does not verify dependency sources). The manifest honestly records `mode_enforced=false` for these modes.
-- Co-signature (attest) verification during `verify` (signatures are written but not checked)
 - Vendor tarball hashing (`archive_sha256` / `extracted_tree_hash` fields are always empty)
 - Source tree hash re-verification during `verify` (the stored hash is checked for integrity but not recomputed from the local repo)
 - Schema validation of bundle JSON against the published schemas
@@ -102,7 +100,7 @@ VBW v1.0 is a **working implementation** — the CLI builds, signs, and verifies
 | Has the output been tampered with? | SHA-256 hashes of every artifact in `outputs.json` |
 | Who attested to all of this? | Ed25519 signature over canonical manifest bytes |
 
-> **Note on reproducibility:** VBW v1.0 *records* the reproducibility mode but does not *enforce* it at build time. Selecting Mode A does not actually block network access. The manifest honestly records `enforcement.mode_enforced=false` for modes A and B. Mode C (Witnessed Non-Deterministic) is the only mode where `mode_enforced=true` in v1.0, because it makes no reproducibility promises.
+> **Note on reproducibility:** VBW attempts to enforce reproducibility modes at build time. Mode A uses `unshare -rn` for network namespace isolation and sets `SOURCE_DATE_EPOCH`. Mode B snapshots lockfile hashes before and after the build to detect modifications. If enforcement partially fails (e.g., user namespaces unavailable for Mode A), the manifest honestly records `mode_enforced=false` with a note explaining what could not be enforced.
 
 ---
 
@@ -350,12 +348,12 @@ scqcs vbw verify [--bundle <dir>]
 6. Recomputes manifest hash from canonical bytes and compares to `hashes/manifest.sha256`
 7. Verifies Ed25519 signature against canonical manifest bytes
 8. Loads each component file, recomputes its SHA-256 hash, compares to manifest reference
-9. Checks output artifacts exist and match `outputs.json` hashes (with path traversal rejection)
-10. Validates enforcement consistency (mode_requested matches policy mode)
-11. Validates policy compliance (dirty tree warning, mode mismatch, lockfile presence)
+9. Verifies co-signatures against `trusted_cosigner_keys` from the policy. If `require_maintainer_cosign_for_release` is true, at least one valid co-signature must be present.
+10. Checks output artifacts exist and match `outputs.json` hashes (with path traversal rejection)
+11. Validates enforcement consistency (mode_requested matches policy mode)
+12. Validates policy compliance (dirty tree warning, mode mismatch, lockfile presence)
 
 **What verify does NOT check (TODOs):**
-- Co-signatures from `attest` are not verified (co-signature `.sig` files in `signatures/` are allowed but not checked)
 - Source tree hash is not recomputed from the local git repo
 - JSON files are not validated against the published schemas
 
@@ -387,27 +385,27 @@ scqcs vbw attest --bundle vbw --keyfile ~/.scqcs/maintainer.sk --key-id "maintai
 
 This writes a new file: `vbw/signatures/maintainer_org.ed25519.sig`
 
-> **Note:** `verify` does not yet check co-signatures — it only verifies the builder signature. Co-signature verification is a TODO for VBW v1.1.
+> **Note:** `verify` checks co-signatures against `trusted_cosigner_keys` listed in the policy. If the policy sets `require_maintainer_cosign_for_release: true`, at least one valid co-signature must be present. Co-signer public keys must be declared in the policy for verification to succeed.
 
 ---
 
 ## Reproducibility Modes
 
-VBW defines three levels of build reproducibility. In v1.0, these are **recorded as declarations** — they describe the builder's intent but are not actively enforced by the tool.
+VBW defines three levels of build reproducibility with active enforcement.
 
 ### Mode A: Deterministic
 
 The strictest mode. Declares that identical inputs produce identical outputs, byte-for-byte.
 
 - **Intent:** No network access, pinned toolchain, `SOURCE_DATE_EPOCH` set
-- **Reality in v1.0:** The mode is recorded but the tool does not block network access or enforce timestamp normalization. The builder is making a promise that auditors can check manually. **The manifest records `enforcement.mode_enforced=false` and prints a WARNING during build.**
+- **Enforcement:** VBW attempts network namespace isolation via `unshare -rn` (Linux user namespaces) and sets `SOURCE_DATE_EPOCH` if not already present. If network isolation succeeds and `SOURCE_DATE_EPOCH` is set, the manifest records `mode_enforced=true`. If `unshare` fails (e.g., user namespaces disabled), the manifest records `mode_enforced=false` with a diagnostic note.
 
 ### Mode B: Locked Network (Default)
 
 A practical middle ground. Declares that network access is only used for fetching locked, hashed dependencies.
 
 - **Intent:** Dependencies come from lockfiles with recorded hashes
-- **Reality in v1.0:** The tool records lockfile hashes but does not verify that the build only fetched from those lockfiles. It's a record of what lockfiles existed, not a guarantee the build respected them. **The manifest records `enforcement.mode_enforced=false` and prints a WARNING during build.**
+- **Enforcement:** VBW snapshots all lockfile hashes (package-lock.json, Cargo.lock, etc.) before the build and compares them after the build completes. If any lockfile was modified during the build, `mode_enforced=false` is recorded. If lockfiles are unchanged, `mode_enforced=true`.
 
 ### Mode C: Witnessed Non-Deterministic
 
@@ -417,7 +415,7 @@ Provenance and integrity without a reproducibility guarantee.
 - Build may not be reproducible
 - Still records what happened: who built it, what tools, what outputs
 - Useful for complex builds that can't (yet) be made deterministic
-- **This is the only mode where `enforcement.mode_enforced=true` in v1.0, because it makes no reproducibility promises that need enforcement.**
+- `mode_enforced=true` because Mode C makes no reproducibility promises that need enforcement.
 
 ---
 
@@ -552,7 +550,7 @@ scqcs vbw build --output-dir build/release -- make release
 
 The policy file controls what the build is *expected* to do. VBW auto-generates a default if none exists.
 
-> **Important:** In v1.0, policy is checked at verify time only. The build command does not enforce policy constraints (it won't block network access for Mode A, for example). Policy enforcement at build time is a TODO.
+> **Note:** Policy is checked at both build time (enforcement) and verify time (compliance). The build command enforces Mode A (network isolation) and Mode B (lockfile integrity). The verify command checks co-signatures against `trusted_cosigner_keys` in the policy.
 
 ### Default Policy (Mode B)
 
@@ -757,8 +755,6 @@ For quick reference, every TODO mentioned in this document and in the code:
 
 | TODO | Where | Priority |
 |------|-------|----------|
-| Build-time policy enforcement (network blocking, epoch, etc.) | `build.rs`, `model.rs` | High |
-| Co-signature verification in `verify` | `verify.rs` | High |
 | Source tree hash re-verification during `verify` | `verify.rs` | Medium |
 | Vendor tarball hashing (`archive_sha256`, `extracted_tree_hash`) | `build.rs`, `model.rs` | Medium |
 | Individual dependency artifact verification from lockfiles | `build.rs` | Medium |

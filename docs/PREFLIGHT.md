@@ -109,7 +109,7 @@ grep -A1 "Content-Security-Policy" _headers
 **Common CSP issues:**
 - External fonts blocked → Add `https://fonts.googleapis.com` to `style-src`, `https://fonts.gstatic.com` to `font-src`
 - Images from CDN blocked → Add CDN domain to `img-src`
-- Inline styles broken → Ensure `'unsafe-inline'` in `style-src` (acceptable for styles)
+- Inline styles broken → All styles must be in external `.css` files (no `unsafe-inline` needed)
 - Scripts blocked → External JS should work with `'self'`, avoid inline scripts
 
 ---

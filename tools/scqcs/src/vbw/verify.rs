@@ -18,7 +18,6 @@
 // NOT against the pretty-printed file on disk.
 //
 // WHAT IS NOT YET IMPLEMENTED (TODOs):
-//   - Co-signature (attest) verification — only builder.ed25519.sig is checked
 //   - Cross-referencing source_commit_tree_hash against the local git repo
 //   - Schema validation of JSON files against the published schemas
 
@@ -220,7 +219,16 @@ pub fn run_verify(bundle_dir: &Path) -> Result<Verdict> {
         )),
     }
 
-    // 11. Verify output artifacts exist and match
+    // 11. Verify co-signatures against trusted cosigner keys from policy.
+    verify_cosignatures(
+        &canonical_bundle,
+        &canonical_bytes,
+        components.policy.as_ref(),
+        &mut errors,
+        &mut warnings,
+    );
+
+    // 12. Verify output artifacts exist and match
     if let Some(ref outputs) = components.outputs {
         for artifact in &outputs.artifacts {
             let artifact_path = PathBuf::from(&artifact.path);
@@ -286,7 +294,7 @@ pub fn run_verify(bundle_dir: &Path) -> Result<Verdict> {
         );
     }
 
-    // 12. Check enforcement consistency
+    // 13. Check enforcement consistency
     if let Some(ref enforcement) = manifest.enforcement {
         if let Some(ref policy) = components.policy {
             if enforcement.mode_requested != policy.requirements.reproducibility.mode {
@@ -304,7 +312,7 @@ pub fn run_verify(bundle_dir: &Path) -> Result<Verdict> {
         }
     }
 
-    // 13. Check policy compliance
+    // 14. Check policy compliance
     if let Some(ref policy) = components.policy {
         check_policy_compliance(
             &manifest,
@@ -353,7 +361,7 @@ fn check_unexpected_files(bundle_dir: &Path, errors: &mut Vec<String>) -> Result
                         && name.len() > ".ed25519.sig".len()
                         && name.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '-' || c == '.')
                     {
-                        // Co-signatures are allowed but not verified in v1.0
+                        // Co-signature file allowed; verified in verify_cosignatures()
                         continue;
                     }
                 }
@@ -392,6 +400,155 @@ fn check_symlink_safety(bundle_dir: &Path, errors: &mut Vec<String>) -> Result<(
         }
     }
     Ok(())
+}
+
+/// Verify co-signatures in the signatures/ directory.
+///
+/// For each `*.ed25519.sig` file (except `builder.ed25519.sig`):
+///   1. Extract the key_id from the filename (stem before .ed25519.sig)
+///   2. Look up the public key in the policy's trusted_cosigner_keys
+///   3. Verify the signature against canonical manifest bytes
+///
+/// If `require_maintainer_cosign_for_release` is true in the policy,
+/// at least one valid co-signature must be present.
+fn verify_cosignatures(
+    bundle_dir: &Path,
+    canonical_bytes: &[u8],
+    policy: Option<&Policy>,
+    errors: &mut Vec<String>,
+    warnings: &mut Vec<String>,
+) {
+    let sig_dir = bundle_dir.join("signatures");
+    if !sig_dir.is_dir() {
+        return;
+    }
+
+    // Collect trusted keys from policy
+    let trusted_keys: Vec<&TrustedCosignerKey> = policy
+        .and_then(|p| p.requirements.signing.as_ref())
+        .and_then(|s| s.trusted_cosigner_keys.as_ref())
+        .map(|keys| keys.iter().collect())
+        .unwrap_or_default();
+
+    let require_cosign = policy
+        .and_then(|p| p.requirements.signing.as_ref())
+        .and_then(|s| s.require_maintainer_cosign_for_release)
+        .unwrap_or(false);
+
+    // Find all co-signature files
+    let cosig_files: Vec<_> = match fs::read_dir(&sig_dir) {
+        Ok(entries) => entries
+            .filter_map(|e| e.ok())
+            .map(|e| e.path())
+            .filter(|p| {
+                p.file_name()
+                    .and_then(|n| n.to_str())
+                    .map(|n| n.ends_with(".ed25519.sig") && n != "builder.ed25519.sig")
+                    .unwrap_or(false)
+            })
+            .collect(),
+        Err(_) => Vec::new(),
+    };
+
+    let mut valid_cosig_count = 0;
+
+    for cosig_path in &cosig_files {
+        let filename = match cosig_path.file_name().and_then(|n| n.to_str()) {
+            Some(n) => n,
+            None => continue,
+        };
+
+        // Extract key_id: strip the ".ed25519.sig" suffix
+        let key_id = &filename[..filename.len() - ".ed25519.sig".len()];
+
+        // Look up trusted key by key_id
+        let trusted_key = trusted_keys.iter().find(|k| {
+            // Match against sanitized key_id (same sanitization as cmd_attest)
+            let sanitized: String = k
+                .key_id
+                .chars()
+                .map(|c| {
+                    if c.is_ascii_alphanumeric() || c == '-' || c == '_' || c == '.' {
+                        c
+                    } else {
+                        '_'
+                    }
+                })
+                .collect();
+            sanitized == key_id
+        });
+
+        match trusted_key {
+            Some(tk) => {
+                // Read and verify the signature
+                match fs::read_to_string(cosig_path) {
+                    Ok(sig_data) => {
+                        let sig = sig_data.trim();
+                        match sign::verify(&tk.public_key_ed25519, canonical_bytes, sig) {
+                            Ok(true) => {
+                                eprintln!(
+                                    "[vbw] Co-signature '{}' (key_id: {}): OK",
+                                    filename, tk.key_id
+                                );
+                                valid_cosig_count += 1;
+                            }
+                            Ok(false) => {
+                                errors.push(format!(
+                                    "Co-signature '{}' INVALID for key_id '{}' \
+                                     (signature does not match canonical manifest bytes)",
+                                    filename, tk.key_id
+                                ));
+                            }
+                            Err(e) => {
+                                errors.push(format!(
+                                    "Co-signature '{}' verification error for key_id '{}': {}",
+                                    filename, tk.key_id, e
+                                ));
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        errors.push(format!(
+                            "Cannot read co-signature file '{}': {}",
+                            filename, e
+                        ));
+                    }
+                }
+            }
+            None => {
+                if trusted_keys.is_empty() {
+                    // No trusted keys configured — co-sig present but unverifiable
+                    warnings.push(format!(
+                        "Co-signature '{}' present but no trusted_cosigner_keys in policy \
+                         (cannot verify)",
+                        filename
+                    ));
+                } else {
+                    warnings.push(format!(
+                        "Co-signature '{}' has no matching key_id in trusted_cosigner_keys",
+                        filename
+                    ));
+                }
+            }
+        }
+    }
+
+    // Enforce cosign requirement
+    if require_cosign && valid_cosig_count == 0 {
+        errors.push(
+            "Policy requires maintainer co-signature for release, \
+             but no valid co-signatures found"
+                .to_string(),
+        );
+    }
+
+    if !cosig_files.is_empty() {
+        eprintln!(
+            "[vbw] Co-signatures: {} found, {} verified",
+            cosig_files.len(),
+            valid_cosig_count
+        );
+    }
 }
 
 /// Recursively walk a directory and return all entries (files and dirs).
@@ -552,6 +709,7 @@ mod tests {
                 },
                 signing: Some(SigningRequirement {
                     require_maintainer_cosign_for_release: Some(false),
+                    trusted_cosigner_keys: None,
                 }),
             },
         };
@@ -832,13 +990,13 @@ mod tests {
     }
 
     #[test]
-    fn verify_allows_cosignature_files() {
+    fn verify_allows_cosignature_files_without_trusted_keys() {
         let dir = tempfile::tempdir().unwrap();
         let bundle = dir.path().join("vbw");
         fs::create_dir(&bundle).unwrap();
         create_test_bundle(&bundle);
 
-        // Add a co-signature file (should be allowed)
+        // Add a co-signature file with no trusted keys in policy
         fs::write(
             bundle.join("signatures/maintainer_org.ed25519.sig"),
             "base64sigdata",
@@ -846,15 +1004,269 @@ mod tests {
         .unwrap();
 
         let verdict = run_verify(&bundle).unwrap();
-        // Should still verify (co-sigs are allowed but not checked)
-        assert!(
-            matches!(
-                verdict,
-                Verdict::Verified | Verdict::VerifiedWithVariance(_)
+        // Should produce a warning (no trusted keys to verify against)
+        // but still verify since require_maintainer_cosign_for_release is false
+        match verdict {
+            Verdict::VerifiedWithVariance(ref warnings) => {
+                assert!(
+                    warnings
+                        .iter()
+                        .any(|w| w.contains("no trusted_cosigner_keys")),
+                    "Expected warning about missing trusted keys, got: {:?}",
+                    warnings
+                );
+            }
+            Verdict::Verified => {
+                // Also acceptable if the cosig is just silently allowed
+            }
+            _ => panic!(
+                "Expected Verified or VerifiedWithVariance, got {:?}",
+                verdict
             ),
-            "Co-signature files should be allowed, got {:?}",
+        }
+    }
+
+    #[test]
+    fn verify_cosignature_cryptographic_check() {
+        let dir = tempfile::tempdir().unwrap();
+        let bundle = dir.path().join("vbw");
+        fs::create_dir(&bundle).unwrap();
+        let manifest = create_test_bundle(&bundle);
+
+        // Generate a cosigner keypair
+        let (cosigner_sk, cosigner_pk) = sign::keygen();
+
+        // Sign the canonical manifest bytes with the cosigner key
+        let canonical_bytes = canonical::canonical_manifest_bytes(&manifest);
+        let cosig = sign::sign(&cosigner_sk, &canonical_bytes).unwrap();
+
+        // Write the co-signature
+        fs::write(
+            bundle.join("signatures/maintainer_org.ed25519.sig"),
+            &cosig,
+        )
+        .unwrap();
+
+        // Update policy to include the trusted cosigner key
+        let policy = Policy {
+            policy_version: "1.0".to_string(),
+            requirements: PolicyRequirements {
+                network: NetworkRequirement {
+                    allowed: true,
+                    allowlist: Some(vec![]),
+                },
+                reproducibility: ReproducibilityRequirement {
+                    mode: ReproducibilityMode::C_WITNESSED_ND,
+                    require_source_date_epoch: Some(false),
+                },
+                materials: MaterialsRequirement {
+                    require_lockfile_hashes: false,
+                    require_vendor_archive_and_tree: Some(false),
+                },
+                signing: Some(SigningRequirement {
+                    require_maintainer_cosign_for_release: Some(true),
+                    trusted_cosigner_keys: Some(vec![TrustedCosignerKey {
+                        key_id: "maintainer_org".to_string(),
+                        public_key_ed25519: cosigner_pk,
+                    }]),
+                }),
+            },
+        };
+        let policy_json = serde_json::to_string_pretty(&policy).unwrap();
+        let policy_hash = hash::sha256_hex(policy_json.as_bytes());
+
+        // Rewrite policy.json and update the manifest's policy_ref hash.
+        // We need to re-sign the manifest with the updated policy hash.
+        fs::write(bundle.join("policy.json"), &policy_json).unwrap();
+
+        // Read original manifest, update policy_ref, re-sign
+        let manifest_json = fs::read_to_string(bundle.join("manifest.json")).unwrap();
+        let mut manifest: Manifest = serde_json::from_str(&manifest_json).unwrap();
+        manifest.policy_ref.hash_sha256 = policy_hash;
+
+        // We need the builder's secret key. Read it from the original signature context.
+        // Since create_test_bundle generates keys internally, we need a different approach.
+        // Re-create the bundle with the updated policy instead.
+        // For simplicity, generate new builder keys and rebuild.
+        let (builder_sk, builder_pk) = sign::keygen();
+        manifest.builder_identity.public_key_ed25519 = builder_pk;
+
+        let canonical_bytes = canonical::canonical_manifest_bytes(&manifest);
+        let manifest_hash = hash::sha256_hex(&canonical_bytes);
+        let builder_sig = sign::sign(&builder_sk, &canonical_bytes).unwrap();
+
+        // Re-sign co-signature with new canonical bytes
+        let cosig = sign::sign(&cosigner_sk, &canonical_bytes).unwrap();
+
+        let pretty_manifest = serde_json::to_string_pretty(&manifest).unwrap();
+        fs::write(bundle.join("manifest.json"), &pretty_manifest).unwrap();
+        fs::write(bundle.join("signatures/builder.ed25519.sig"), &builder_sig).unwrap();
+        fs::write(bundle.join("hashes/manifest.sha256"), &manifest_hash).unwrap();
+        fs::write(
+            bundle.join("signatures/maintainer_org.ed25519.sig"),
+            &cosig,
+        )
+        .unwrap();
+
+        let verdict = run_verify(&bundle).unwrap();
+        assert!(
+            matches!(verdict, Verdict::Verified),
+            "Expected Verified with valid cosignature, got {:?}",
             verdict
         );
+    }
+
+    #[test]
+    fn verify_cosignature_invalid_signature_fails() {
+        let dir = tempfile::tempdir().unwrap();
+        let bundle = dir.path().join("vbw");
+        fs::create_dir(&bundle).unwrap();
+        let manifest = create_test_bundle(&bundle);
+
+        // Generate cosigner keys
+        let (_cosigner_sk, cosigner_pk) = sign::keygen();
+
+        // Write an INVALID co-signature (signed with a DIFFERENT key)
+        let (other_sk, _other_pk) = sign::keygen();
+        let canonical_bytes = canonical::canonical_manifest_bytes(&manifest);
+        let bad_cosig = sign::sign(&other_sk, &canonical_bytes).unwrap();
+
+        fs::write(
+            bundle.join("signatures/maintainer_org.ed25519.sig"),
+            &bad_cosig,
+        )
+        .unwrap();
+
+        // Update policy to include the trusted key (which won't match the signature)
+        let policy = Policy {
+            policy_version: "1.0".to_string(),
+            requirements: PolicyRequirements {
+                network: NetworkRequirement {
+                    allowed: true,
+                    allowlist: Some(vec![]),
+                },
+                reproducibility: ReproducibilityRequirement {
+                    mode: ReproducibilityMode::C_WITNESSED_ND,
+                    require_source_date_epoch: Some(false),
+                },
+                materials: MaterialsRequirement {
+                    require_lockfile_hashes: false,
+                    require_vendor_archive_and_tree: Some(false),
+                },
+                signing: Some(SigningRequirement {
+                    require_maintainer_cosign_for_release: Some(false),
+                    trusted_cosigner_keys: Some(vec![TrustedCosignerKey {
+                        key_id: "maintainer_org".to_string(),
+                        public_key_ed25519: cosigner_pk,
+                    }]),
+                }),
+            },
+        };
+        let policy_json = serde_json::to_string_pretty(&policy).unwrap();
+        let policy_hash = hash::sha256_hex(policy_json.as_bytes());
+        fs::write(bundle.join("policy.json"), &policy_json).unwrap();
+
+        // Update manifest with new policy hash and re-sign
+        let manifest_json = fs::read_to_string(bundle.join("manifest.json")).unwrap();
+        let mut manifest: Manifest = serde_json::from_str(&manifest_json).unwrap();
+        manifest.policy_ref.hash_sha256 = policy_hash;
+
+        let (builder_sk, builder_pk) = sign::keygen();
+        manifest.builder_identity.public_key_ed25519 = builder_pk;
+
+        let canonical_bytes = canonical::canonical_manifest_bytes(&manifest);
+        let manifest_hash = hash::sha256_hex(&canonical_bytes);
+        let builder_sig = sign::sign(&builder_sk, &canonical_bytes).unwrap();
+
+        fs::write(
+            bundle.join("manifest.json"),
+            serde_json::to_string_pretty(&manifest).unwrap(),
+        )
+        .unwrap();
+        fs::write(bundle.join("signatures/builder.ed25519.sig"), &builder_sig).unwrap();
+        fs::write(bundle.join("hashes/manifest.sha256"), &manifest_hash).unwrap();
+
+        let verdict = run_verify(&bundle).unwrap();
+        match verdict {
+            Verdict::Unverified(errors) => {
+                assert!(
+                    errors.iter().any(|e| e.contains("INVALID")),
+                    "Expected invalid co-signature error, got: {:?}",
+                    errors
+                );
+            }
+            _ => panic!("Expected Unverified for invalid cosignature, got {:?}", verdict),
+        }
+    }
+
+    #[test]
+    fn verify_requires_cosign_fails_without_one() {
+        let dir = tempfile::tempdir().unwrap();
+        let bundle = dir.path().join("vbw");
+        fs::create_dir(&bundle).unwrap();
+        let _manifest = create_test_bundle(&bundle);
+
+        // Update policy to require cosign but provide no co-signature files
+        let (_, cosigner_pk) = sign::keygen();
+        let policy = Policy {
+            policy_version: "1.0".to_string(),
+            requirements: PolicyRequirements {
+                network: NetworkRequirement {
+                    allowed: true,
+                    allowlist: Some(vec![]),
+                },
+                reproducibility: ReproducibilityRequirement {
+                    mode: ReproducibilityMode::C_WITNESSED_ND,
+                    require_source_date_epoch: Some(false),
+                },
+                materials: MaterialsRequirement {
+                    require_lockfile_hashes: false,
+                    require_vendor_archive_and_tree: Some(false),
+                },
+                signing: Some(SigningRequirement {
+                    require_maintainer_cosign_for_release: Some(true),
+                    trusted_cosigner_keys: Some(vec![TrustedCosignerKey {
+                        key_id: "maintainer_org".to_string(),
+                        public_key_ed25519: cosigner_pk,
+                    }]),
+                }),
+            },
+        };
+        let policy_json = serde_json::to_string_pretty(&policy).unwrap();
+        let policy_hash = hash::sha256_hex(policy_json.as_bytes());
+        fs::write(bundle.join("policy.json"), &policy_json).unwrap();
+
+        // Update manifest with new policy hash and re-sign
+        let manifest_json = fs::read_to_string(bundle.join("manifest.json")).unwrap();
+        let mut manifest: Manifest = serde_json::from_str(&manifest_json).unwrap();
+        manifest.policy_ref.hash_sha256 = policy_hash;
+
+        let (builder_sk, builder_pk) = sign::keygen();
+        manifest.builder_identity.public_key_ed25519 = builder_pk;
+
+        let canonical_bytes = canonical::canonical_manifest_bytes(&manifest);
+        let manifest_hash = hash::sha256_hex(&canonical_bytes);
+        let builder_sig = sign::sign(&builder_sk, &canonical_bytes).unwrap();
+
+        fs::write(
+            bundle.join("manifest.json"),
+            serde_json::to_string_pretty(&manifest).unwrap(),
+        )
+        .unwrap();
+        fs::write(bundle.join("signatures/builder.ed25519.sig"), &builder_sig).unwrap();
+        fs::write(bundle.join("hashes/manifest.sha256"), &manifest_hash).unwrap();
+
+        let verdict = run_verify(&bundle).unwrap();
+        match verdict {
+            Verdict::Unverified(errors) => {
+                assert!(
+                    errors.iter().any(|e| e.contains("requires maintainer co-signature")),
+                    "Expected cosign requirement error, got: {:?}",
+                    errors
+                );
+            }
+            _ => panic!("Expected Unverified when cosign required but absent, got {:?}", verdict),
+        }
     }
 
     #[test]

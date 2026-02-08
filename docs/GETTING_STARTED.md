@@ -173,7 +173,7 @@ This is automatic! Every time you push to GitHub:
 If you need to load resources from external domains (fonts, images, APIs), update `_headers`:
 
 ```
-Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://your-api.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://images.example.com; ...
+Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com https://your-api.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://images.example.com; ...
 ```
 
 ### Adding Analytics (If You Must)
