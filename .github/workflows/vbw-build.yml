@@ -1,0 +1,57 @@
+name: VBW Build (SCQCS site)
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch: {}
+
+jobs:
+  build_vbw:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            tools/scqcs/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('tools/scqcs/Cargo.lock') }}
+
+      - name: Build scqcs CLI tool
+        run: cargo build --release
+        working-directory: tools/scqcs
+
+      - name: Create dist directory
+        run: |
+          mkdir -p dist
+          cp index.html dist/
+          cp main.js dist/
+          cp style.css dist/ 2>/dev/null || true
+          cp -r *.png *.jpeg *.ico *.mp4 *.gif *.webmanifest dist/ 2>/dev/null || true
+          cp robots.txt sitemap.xml humans.txt llms.txt dist/ 2>/dev/null || true
+          cp _headers _redirects dist/ 2>/dev/null || true
+          cp -r .well-known dist/ 2>/dev/null || true
+
+      - name: VBW bundle
+        env:
+          SCQCS_VBW_ED25519_SK_B64: ${{ secrets.VBW_BUILDER_SK_B64 }}
+        run: |
+          ./tools/scqcs/target/release/scqcs vbw build \
+            --project scqcs-site \
+            --output-dir dist \
+            -- echo "Static site copied to dist/"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: scqcs-site-dist-and-vbw
+          path: |
+            dist/**
+            vbw/**

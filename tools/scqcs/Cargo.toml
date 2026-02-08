@@ -1,0 +1,26 @@
+[package]
+name = "scqcs"
+version = "0.1.0"
+edition = "2021"
+description = "SCQCS CLI — Verified Build Witness (VBW) tooling"
+license = "MIT"
+
+[[bin]]
+name = "scqcs"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+base64 = "0.21"
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+anyhow = "1"
+chrono = { version = "0.4", features = ["serde"] }
+rand = "0.8"
+uuid = { version = "1", features = ["v4"] }
+
+[profile.release]
+strip = true
+lto = true
