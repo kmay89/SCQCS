@@ -1,3 +1,22 @@
+// verify.rs — VBW bundle verification
+//
+// Reads a witness bundle from disk, recomputes all hashes, verifies
+// the Ed25519 signature, and checks policy compliance.
+//
+// WHAT IS REAL:
+//   - SHA-256 hash verification of all component files
+//   - Ed25519 signature verification against the public key in the manifest
+//   - Output artifact hash verification (if files still exist on disk)
+//   - Policy compliance checks (dirty tree, lockfile presence, mode match)
+//
+// WHAT IS NOT YET IMPLEMENTED (TODOs):
+//   - Co-signature (attest) verification — only builder.ed25519.sig is checked.
+//     Additional signatures in signatures/ are written by `attest` but not
+//     validated by `verify`. This is a TODO for VBW v1.1.
+//   - Cross-referencing source_commit_tree_hash against the local git repo
+//     (verify currently trusts the hash in the manifest, not recomputing it)
+//   - Schema validation of JSON files against the published schemas
+
 use anyhow::{Context, Result};
 use std::fs;
 use std::path::{Path, PathBuf};

@@ -1,3 +1,11 @@
+// cli.rs — Command-line interface definitions (clap derive)
+//
+// Defines the top-level `scqcs` command and the `vbw` subcommand tree:
+//   scqcs vbw keygen   — generate Ed25519 keypair
+//   scqcs vbw build    — run build + generate witness bundle
+//   scqcs vbw verify   — verify a witness bundle
+//   scqcs vbw attest   — add a co-signature to an existing bundle
+
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 

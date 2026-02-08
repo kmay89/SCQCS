@@ -1,3 +1,8 @@
+// main.rs — SCQCS CLI entry point
+//
+// Currently the only top-level command is `vbw` (Verified Build Witness).
+// The CLI is structured to allow future commands under the `scqcs` namespace.
+
 mod cli;
 mod git;
 mod hash;

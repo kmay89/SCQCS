@@ -1,10 +1,20 @@
+// sign.rs — Ed25519 key generation, signing, and verification
+//
+// Uses the `ed25519-dalek` crate (v2) for all cryptographic operations.
+// Keys are 32-byte seeds, signatures are 64 bytes, all encoded as
+// standard base64 for storage and transport.
+//
+// REAL: This is real Ed25519 cryptography using OS-provided randomness.
+// Keys generated here are production-grade.
+
 use anyhow::{bail, Context, Result};
 use base64::engine::general_purpose::STANDARD as B64;
 use base64::Engine;
 use ed25519_dalek::{Signer, SigningKey, Verifier, VerifyingKey};
 use std::path::Path;
 
-/// Generate a new Ed25519 keypair. Returns (secret_key_b64, public_key_b64).
+/// Generate a new Ed25519 keypair using OS randomness.
+/// Returns (secret_key_base64, public_key_base64).
 pub fn keygen() -> (String, String) {
     let mut csprng = rand::rngs::OsRng;
     let signing_key = SigningKey::generate(&mut csprng);
@@ -15,7 +25,9 @@ pub fn keygen() -> (String, String) {
     )
 }
 
-/// Sign data with an Ed25519 secret key (base64-encoded 32-byte seed).
+/// Sign arbitrary data with an Ed25519 secret key.
+/// The secret key is a base64-encoded 32-byte seed.
+/// Returns the signature as base64.
 pub fn sign(secret_key_b64: &str, data: &[u8]) -> Result<String> {
     let sk_bytes = B64
         .decode(secret_key_b64)
@@ -28,7 +40,9 @@ pub fn sign(secret_key_b64: &str, data: &[u8]) -> Result<String> {
     Ok(B64.encode(sig.to_bytes()))
 }
 
-/// Verify an Ed25519 signature (base64) against a public key (base64).
+/// Verify an Ed25519 signature.
+/// Returns Ok(true) if valid, Ok(false) if the signature doesn't match.
+/// Returns Err only if the key or signature bytes are malformed.
 pub fn verify(public_key_b64: &str, data: &[u8], signature_b64: &str) -> Result<bool> {
     let pk_bytes = B64
         .decode(public_key_b64)
@@ -50,7 +64,11 @@ pub fn verify(public_key_b64: &str, data: &[u8], signature_b64: &str) -> Result<
     Ok(verifying_key.verify(data, &signature).is_ok())
 }
 
-/// Load a secret key from either the environment variable or a keyfile path.
+/// Load the builder's secret key from one of two sources (checked in order):
+///   1. SCQCS_VBW_ED25519_SK_B64 environment variable (preferred for CI)
+///   2. --keyfile path on disk (for local development)
+///
+/// Returns the base64-encoded secret key string.
 pub fn load_secret_key(keyfile: Option<&Path>) -> Result<String> {
     if let Ok(key) = std::env::var("SCQCS_VBW_ED25519_SK_B64") {
         if !key.is_empty() {
@@ -70,7 +88,8 @@ pub fn load_secret_key(keyfile: Option<&Path>) -> Result<String> {
     );
 }
 
-/// Derive the public key (base64) from a secret key (base64).
+/// Derive the public key from a secret key.
+/// Both are base64-encoded.
 pub fn public_key_from_secret(secret_key_b64: &str) -> Result<String> {
     let sk_bytes = B64
         .decode(secret_key_b64)

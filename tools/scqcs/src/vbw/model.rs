@@ -1,6 +1,22 @@
+// model.rs — Serde data structures for all VBW JSON files
+//
+// These structs map 1:1 to the JSON Schemas in schemas/vbw/.
+// They are used for both serialization (build) and deserialization (verify).
+//
+// REAL: These are the actual types written to and read from vbw/ bundles.
+// They are not demo types — they define the wire format.
+//
+// NOTE on MaterialEntry.kind: The JSON schema constrains kind to
+// enum ["npm", "git", "tarball", "file"], but the Rust struct uses String
+// for forward-compatibility. Validation against the schema is the
+// responsibility of external tooling, not this code.
+
 use serde::{Deserialize, Serialize};
 
 // ── Manifest ────────────────────────────────────────────────────────────────
+// The root document of a witness bundle. Contains hashes of all other files,
+// git state, builder identity, and the policy reference. This is the file
+// that gets signed.
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Manifest {
@@ -9,16 +25,22 @@ pub struct Manifest {
     pub created_at: String,
     pub project: Project,
     pub git: GitRef,
+    /// SHA-256 of `git ls-tree -r <commit>` output.
     pub source_commit_tree_hash: String,
+    /// SHA-256 of worktree file contents. Only present when git.dirty is true.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub source_worktree_hash: Option<String>,
+    /// SHA-256 of materials.lock.json (the file contents, not the lockfiles).
     pub materials_lock_hash: String,
+    /// SHA-256 of environment.json.
     pub environment_hash: String,
+    /// SHA-256 of outputs.json.
     pub outputs_hash: String,
     pub builder_identity: BuilderIdentity,
     pub policy_ref: PolicyRef,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub notes: Option<String>,
+    /// Extension point for custom fields. Not used by VBW v1.0.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ext: Option<serde_json::Value>,
 }
@@ -44,7 +66,9 @@ pub struct GitRef {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BuilderIdentity {
+    /// Human-readable identifier (e.g. "builder@ci", "alice@example.com").
     pub key_id: String,
+    /// Base64-encoded Ed25519 public key (44 characters with padding).
     pub public_key_ed25519: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub issuer: Option<String>,
@@ -57,6 +81,8 @@ pub struct PolicyRef {
 }
 
 // ── Environment ─────────────────────────────────────────────────────────────
+// Captures the build machine state: OS, tools, container info, and
+// reproducibility settings.
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Environment {
@@ -112,6 +138,13 @@ pub struct Reproducibility {
     pub network: Option<NetworkPolicy>,
 }
 
+/// The three reproducibility modes defined by the VBW spec.
+///
+/// These are recorded in the bundle but NOT actively enforced at build time
+/// in VBW v1.0. Mode A does not block network access; Mode B does not
+/// verify that dependencies came from lockfiles. Enforcement is a TODO
+/// for a future version. The verify command checks that the recorded mode
+/// matches the policy, but cannot retroactively enforce the constraints.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum ReproducibilityMode {
@@ -128,6 +161,7 @@ pub struct NetworkPolicy {
 }
 
 // ── Outputs ─────────────────────────────────────────────────────────────────
+// Lists every artifact produced by the build, with SHA-256 hashes and sizes.
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Outputs {
@@ -148,6 +182,11 @@ pub struct Artifact {
 }
 
 // ── Policy ──────────────────────────────────────────────────────────────────
+// Defines what the build SHOULD do. The build command records the policy;
+// the verify command checks compliance after the fact.
+//
+// TODO: Build-time enforcement (block network in Mode A, validate lockfile
+// hashes in Mode B, require SOURCE_DATE_EPOCH, etc.) is not yet implemented.
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Policy {
@@ -193,6 +232,7 @@ pub struct SigningRequirement {
 
 impl Policy {
     /// Generate a sensible default policy (Mode B, locked network).
+    /// Used when no policy.json exists yet.
     pub fn default_policy() -> Self {
         Policy {
             policy_version: "1.0".to_string(),
@@ -218,6 +258,11 @@ impl Policy {
 }
 
 // ── Materials Lock ──────────────────────────────────────────────────────────
+// Records which lockfiles were present and their hashes.
+//
+// TODO: Vendor tarball support (archive_sha256 + extracted_tree_hash)
+// is defined in the schema but not yet populated by the build command.
+// These fields will always be None in VBW v1.0.
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MaterialsLock {
@@ -234,12 +279,16 @@ pub struct LockfileEntry {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MaterialEntry {
     pub name: String,
+    /// One of: "npm", "git", "tarball", "file" (per schema).
+    /// Currently only "npm" and "file" are used by auto-detection.
     pub kind: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub source: Option<String>,
     pub sha256: String,
+    /// SHA-256 of vendor archive as-downloaded. TODO: Not yet populated.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub archive_sha256: Option<String>,
+    /// Canonical hash of extracted vendor archive. TODO: Not yet populated.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extracted_tree_hash: Option<String>,
 }

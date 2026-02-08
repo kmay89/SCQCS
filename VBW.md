@@ -6,6 +6,32 @@ VBW creates tamper-evident records proving that specific source code, built with
 
 ---
 
+## Status
+
+VBW v1.0 is a **working implementation** — the CLI builds, signs, and verifies real bundles. The core pipeline (hashing, signing, verification) is production-grade cryptography.
+
+**What works today:**
+- Ed25519 key generation, signing, and verification (real, not demo)
+- SHA-256 hashing of all source trees, lockfiles, and output artifacts (real)
+- Git commit/branch/dirty detection (real)
+- Build transcript capture (real, with a limitation noted below)
+- Full verify pipeline: hash checks, signature verification, policy compliance
+- GitHub Actions integration
+
+**What is not yet implemented (TODOs):**
+- Build-time policy enforcement (Mode A does not block network; Mode B does not verify dependency sources)
+- Co-signature (attest) verification during `verify` (signatures are written but not checked)
+- Vendor tarball hashing (`archive_sha256` / `extracted_tree_hash` fields are always empty)
+- Source tree hash re-verification during `verify` (the stored hash is checked for integrity but not recomputed from the local repo)
+- Schema validation of bundle JSON against the published schemas
+
+**Known limitations:**
+- Build transcript captures stdout fully, then stderr (not interleaved)
+- Environment capture requires Unix (`uname`, `which`) — falls back to "unknown" on other platforms
+- Container detection is heuristic (checks `/.dockerenv`, `/proc/self/cgroup`)
+
+---
+
 ## Why VBW Exists
 
 When you download software, you trust that the binary matches the source code. But how do you *prove* it? VBW answers six questions about every build:
@@ -15,9 +41,11 @@ When you download software, you trust that the binary matches the source code. B
 | What exact source was built? | Git commit hash + canonical source tree hash |
 | What tools compiled it? | Compiler/runtime versions captured in `environment.json` |
 | What OS/container ran the build? | OS, kernel, architecture, container digest |
-| Can this build be reproduced? | Reproducibility mode (deterministic / locked / witnessed) |
+| Can this build be reproduced? | Reproducibility mode recorded (see note below) |
 | Has the output been tampered with? | SHA-256 hashes of every artifact in `outputs.json` |
 | Who attested to all of this? | Ed25519 signature over the manifest |
+
+> **Note on reproducibility:** VBW v1.0 *records* the reproducibility mode but does not *enforce* it. Selecting Mode A does not actually block network access during the build. Enforcement is planned for a future version. The mode is an honest declaration by the builder, verified against policy at audit time.
 
 ---
 
@@ -103,7 +131,7 @@ vbw/
   environment.json             # OS, compiler versions, container digest
   materials.lock.json          # Dependency lockfile hashes
   outputs.json                 # Artifact paths, SHA-256 hashes, sizes
-  transcript.txt               # Full build log (stdout/stderr)
+  transcript.txt               # Full build log (stdout/stderr, sequential)
   policy.json                  # Build policy requirements
   signatures/
     builder.ed25519.sig        # Ed25519 signature over manifest.json
@@ -116,6 +144,7 @@ vbw/
 The core document. It doesn't contain data directly — it contains *hashes* of all other files, creating a single signed root of trust.
 
 ```json
+// ILLUSTRATIVE EXAMPLE — hashes are shortened placeholders, not real values
 {
   "vbw_version": "1.0",
   "build_id": "a1b2c3d4-e5f6-...",
@@ -126,26 +155,27 @@ The core document. It doesn't contain data directly — it contains *hashes* of 
     "branch": "main",
     "dirty": false
   },
-  "source_commit_tree_hash": "e3b0c44298fc1c14...",
-  "materials_lock_hash": "d7a8fbb307d7809469...",
-  "environment_hash": "9f86d081884c7d659a...",
-  "outputs_hash": "2c26b46b68ffc68ff9...",
+  "source_commit_tree_hash": "aabbccdd...(64 hex chars total)...",
+  "materials_lock_hash": "11223344...(64 hex chars total)...",
+  "environment_hash": "55667788...(64 hex chars total)...",
+  "outputs_hash": "99aabbcc...(64 hex chars total)...",
   "builder_identity": {
     "key_id": "builder@ci",
-    "public_key_ed25519": "Base64EncodedPublicKey..."
+    "public_key_ed25519": "Base64EncodedEd25519PublicKey44chars="
   },
   "policy_ref": {
     "path": "vbw/policy.json",
-    "hash_sha256": "hash-of-policy-file..."
+    "hash_sha256": "ddeeff00...(64 hex chars total)..."
   }
 }
 ```
 
 ### environment.json
 
-Captures everything about where the build ran:
+Captures the build machine state. This is real data captured from the OS at build time.
 
 ```json
+// ILLUSTRATIVE EXAMPLE — values will differ on your machine
 {
   "os": {
     "name": "Linux",
@@ -166,20 +196,21 @@ Captures everything about where the build ran:
 
 ### outputs.json
 
-Every artifact is hashed and measured:
+Every artifact is hashed and measured. These are real SHA-256 hashes of the actual files.
 
 ```json
+// ILLUSTRATIVE EXAMPLE — hashes and sizes are placeholders
 {
   "artifacts": [
     {
       "path": "dist/index.html",
-      "sha256": "e3b0c44298fc1c149afbf4c8...",
+      "sha256": "aabbccdd...(64 hex chars)...",
       "size_bytes": 15234,
       "mime": "text/html"
     },
     {
       "path": "dist/main.js",
-      "sha256": "d7a8fbb307d7809469ca9abcb...",
+      "sha256": "eeff0011...(64 hex chars)...",
       "size_bytes": 42891,
       "mime": "application/javascript"
     }
@@ -256,7 +287,12 @@ scqcs vbw verify [--bundle <dir>]
 2. Verifies Ed25519 signature against the public key in the manifest
 3. Loads each component file, recomputes its hash, compares to manifest
 4. Checks that output artifacts exist and match `outputs.json` hashes
-5. Validates policy compliance
+5. Validates policy compliance (dirty tree warning, mode mismatch, lockfile presence)
+
+**What verify does NOT check (TODOs):**
+- Co-signatures from `attest` are not verified
+- Source tree hash is not recomputed from the local git repo
+- JSON files are not validated against the published schemas
 
 **Exit codes:**
 - `0` — Verified (or verified with variance)
@@ -286,28 +322,27 @@ scqcs vbw attest --bundle vbw --keyfile ~/.scqcs/maintainer.sk --key-id "maintai
 
 This writes a new file: `vbw/signatures/maintainer_org.ed25519.sig`
 
+> **Note:** `verify` does not yet check co-signatures — it only verifies the builder signature. Co-signature verification is a TODO for VBW v1.1.
+
 ---
 
 ## Reproducibility Modes
 
-VBW supports three levels of build reproducibility:
+VBW defines three levels of build reproducibility. In v1.0, these are **recorded as declarations** — they describe the builder's intent but are not actively enforced by the tool.
 
 ### Mode A: Deterministic
 
-The strictest mode. The exact same inputs must produce the exact same outputs, byte-for-byte.
+The strictest mode. Declares that identical inputs produce identical outputs, byte-for-byte.
 
-- No network access during build
-- Pinned toolchain versions
-- `SOURCE_DATE_EPOCH` set to normalize timestamps
-- If you rebuild from the same commit, you get identical hashes
+- **Intent:** No network access, pinned toolchain, `SOURCE_DATE_EPOCH` set
+- **Reality in v1.0:** The mode is recorded but the tool does not block network access or enforce timestamp normalization. The builder is making a promise that auditors can check manually.
 
 ### Mode B: Locked Network (Default)
 
-A practical middle ground. Network access is allowed, but only for fetching locked, hashed dependencies.
+A practical middle ground. Declares that network access is only used for fetching locked, hashed dependencies.
 
-- Dependencies must come from lockfiles with recorded hashes
-- Toolchain versions are captured but not pinned
-- Good for projects using `npm ci`, `cargo build`, or similar
+- **Intent:** Dependencies come from lockfiles with recorded hashes
+- **Reality in v1.0:** The tool records lockfile hashes but does not verify that the build only fetched from those lockfiles. It's a record of what lockfiles existed, not a guarantee the build respected them.
 
 ### Mode C: Witnessed Non-Deterministic
 
@@ -384,6 +419,8 @@ jobs:
             vbw/**
 ```
 
+> **Note:** This workflow will fail until you add the `VBW_BUILDER_SK_B64` secret to GitHub. Without it, the `scqcs vbw build` command will error with "No signing key found."
+
 After each push, the witness bundle is uploaded as a build artifact alongside the site.
 
 ### Step 4: Verify Locally
@@ -426,12 +463,14 @@ VBW auto-detects `go.sum` and records its hash.
 
 ### Static Sites (No Build Step)
 
-If your site is already built (pure HTML/CSS/JS), use a copy step:
+If your site is already built (pure HTML/CSS/JS), use a copy step as the build command:
 
 ```bash
 mkdir -p dist && cp -r *.html *.css *.js dist/
 scqcs vbw build --output-dir dist -- echo "Static site copied"
 ```
+
+This is what the SCQCS site itself uses. The build command (`echo`) is trivial — VBW still captures the full environment and hashes all output artifacts.
 
 ### Custom Output Directory
 
@@ -445,7 +484,9 @@ scqcs vbw build --output-dir build/release -- make release
 
 ## Policy Configuration
 
-The policy file controls what the build is *required* to do. VBW auto-generates a default if none exists.
+The policy file controls what the build is *expected* to do. VBW auto-generates a default if none exists.
+
+> **Important:** In v1.0, policy is checked at verify time only. The build command does not enforce policy constraints (it won't block network access for Mode A, for example). Policy enforcement at build time is a TODO.
 
 ### Default Policy (Mode B)
 
@@ -474,7 +515,7 @@ The policy file controls what the build is *required* to do. VBW auto-generates 
 
 ### Strict Policy (Mode A)
 
-For maximum reproducibility:
+For declaring maximum reproducibility intent:
 
 ```json
 {
@@ -499,6 +540,8 @@ For maximum reproducibility:
 }
 ```
 
+> **Note:** Setting `"allowed": false` records the intent but does not block network. Setting `"require_vendor_archive_and_tree": true` will produce a verify warning since vendor tarball hashing is not yet implemented.
+
 To use a custom policy, save it and pass it via `--policy`:
 
 ```bash
@@ -514,17 +557,17 @@ Verification rebuilds the chain of trust from the inside out:
 ```
 manifest.json
   |
-  |-- hashes/manifest.sha256      (does the stored hash match the file?)
-  |-- signatures/builder.ed25519  (does the signature match the public key?)
+  |-- hashes/manifest.sha256       Does the stored hash match the file?
+  |-- signatures/builder.ed25519   Does the signature match the public key?
   |
-  |-- environment_hash            (recompute hash of environment.json, compare)
-  |-- materials_lock_hash         (recompute hash of materials.lock.json, compare)
-  |-- outputs_hash                (recompute hash of outputs.json, compare)
-  |-- policy_ref.hash_sha256      (recompute hash of policy.json, compare)
+  |-- environment_hash             Recompute hash of environment.json, compare
+  |-- materials_lock_hash          Recompute hash of materials.lock.json, compare
+  |-- outputs_hash                 Recompute hash of outputs.json, compare
+  |-- policy_ref.hash_sha256       Recompute hash of policy.json, compare
   |
   outputs.json
-    |-- artifact[0].sha256        (does dist/index.html still match?)
-    |-- artifact[1].sha256        (does dist/main.js still match?)
+    |-- artifact[0].sha256         Does dist/index.html still match?
+    |-- artifact[1].sha256         Does dist/main.js still match?
     ...
 ```
 
@@ -532,6 +575,11 @@ If any hash doesn't match, the verdict is **UNVERIFIED**. This catches:
 - Modified artifacts (someone changed a file after the build)
 - Modified metadata (someone altered the environment or materials record)
 - Forged signatures (someone tried to re-sign with a different key)
+
+**What verification does not catch:**
+- Tampering that occurred *during* the build (compromised build environment)
+- A compromised signing key used to produce a valid-but-malicious bundle
+- Builds that violated their declared reproducibility mode
 
 ---
 
@@ -549,7 +597,7 @@ tools/scqcs/
     vbw/
       mod.rs                    # Module declarations
       model.rs                  # Serde structs matching all JSON schemas
-      build.rs                  # Build workflow (14-step pipeline)
+      build.rs                  # Build workflow (13-step pipeline)
       verify.rs                 # Verification workflow (8-step pipeline)
 
 schemas/vbw/
@@ -577,23 +625,26 @@ All VBW files conform to JSON Schemas published in `schemas/vbw/`. These schemas
 | `policy-1.0.schema.json` | `vbw/policy.json` |
 | `materials-lock-1.0.schema.json` | `vbw/materials.lock.json` |
 
+> **Note:** The CLI does not validate bundle files against these schemas. The schemas are published for external tooling and documentation. Runtime schema validation is a TODO.
+
 ---
 
 ## Security Model
 
-### What VBW Proves
+### What VBW Proves (real, implemented)
 
-- The build artifacts were produced by the claimed source commit
-- The builder possessed the signing key at build time
-- The environment and dependencies match what was recorded
-- No file in the bundle has been modified since signing
+- The build artifacts match the hashes recorded at build time (SHA-256)
+- The manifest was signed by the holder of the declared Ed25519 key
+- The environment, dependencies, and policy files have not been modified since signing
+- The git commit and dirty status were accurately recorded at build time
 
 ### What VBW Does Not Prove
 
 - That the source code is free of vulnerabilities
 - That the signing key hasn't been compromised
 - That the build environment wasn't itself compromised
-- That the build is reproducible (unless using Mode A)
+- That the build is reproducible (the mode is a declaration, not a proof)
+- That dependencies were actually fetched from lockfile-specified sources
 
 VBW is one layer in a defense-in-depth strategy. It answers "what happened during this build?" with cryptographic certainty, but it doesn't answer "should this build be trusted?" — that's a policy decision for humans.
 
@@ -628,16 +679,24 @@ VBW automatically detects and hashes these lockfiles if they exist in the projec
 
 ## Platform Support
 
-VBW targets Unix/Linux environments and CI runners (GitHub Actions, Docker). Environment detection uses `uname` for OS information and `which` for tool paths. On non-Unix systems, OS fields will report "unknown" but the core signing and verification workflow functions correctly on any platform.
+VBW targets Unix/Linux environments and CI runners (GitHub Actions, Docker). Environment detection uses `uname` for OS information and `which` for tool paths. On non-Unix systems, OS fields will report "unknown" but the core signing and verification workflow functions correctly on any platform where Rust compiles.
 
 ---
 
-## Roadmap (VBW-2)
+## All TODOs in One Place
 
-Future enhancements planned for VBW v2:
+For quick reference, every TODO mentioned in this document and in the code:
 
-- Transparency log integration (append-only public ledger of witness bundles)
-- Vendor tarball support (hash both archive and extracted tree)
-- Multi-builder consensus (require N-of-M builder signatures)
-- OIDC identity binding (tie builder keys to CI identity tokens)
-- SBOM integration (link witness bundles to software bill of materials)
+| TODO | Where | Priority |
+|------|-------|----------|
+| Build-time policy enforcement (network blocking, epoch, etc.) | `build.rs`, `model.rs` | High |
+| Co-signature verification in `verify` | `verify.rs` | High |
+| Source tree hash re-verification during `verify` | `verify.rs` | Medium |
+| Vendor tarball hashing (`archive_sha256`, `extracted_tree_hash`) | `build.rs`, `model.rs` | Medium |
+| Runtime JSON schema validation | `verify.rs` | Low |
+| Richer material kind values in schema (cargo, go, ruby) | `build.rs`, schema | Low |
+| Interleaved stdout/stderr transcript capture | `build.rs` | Low |
+| Transparency log integration | Roadmap (VBW-2) | Future |
+| Multi-builder consensus (N-of-M signatures) | Roadmap (VBW-2) | Future |
+| OIDC identity binding | Roadmap (VBW-2) | Future |
+| SBOM integration | Roadmap (VBW-2) | Future |

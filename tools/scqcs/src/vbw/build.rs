@@ -1,3 +1,33 @@
+// build.rs — VBW build workflow
+//
+// Orchestrates the 13-step build pipeline: load policy, capture environment,
+// detect lockfiles, gather git state, run the build command, hash outputs,
+// assemble the manifest, sign it, and write the bundle to vbw/.
+//
+// WHAT IS REAL:
+//   - Cryptographic hashing (SHA-256) of all files and artifacts
+//   - Ed25519 signing of the manifest
+//   - Git commit/branch/dirty detection
+//   - Source tree hashing via git ls-tree
+//   - Lockfile detection and hashing
+//   - Environment capture (OS, tools, container detection)
+//   - Build command execution with transcript capture
+//
+// WHAT IS NOT YET IMPLEMENTED (TODOs):
+//   - Policy enforcement at build time (Mode A network blocking, etc.)
+//   - Vendor tarball hashing (archive_sha256 + extracted_tree_hash)
+//   - Individual dependency hash verification from lockfiles
+//   - SOURCE_DATE_EPOCH enforcement for Mode A
+//
+// KNOWN LIMITATIONS:
+//   - Transcript captures stdout fully, then stderr fully (sequential,
+//     not interleaved). For long builds, stderr appears after all stdout.
+//   - Environment capture uses Unix commands (uname, which). Falls back
+//     to "unknown" on non-Unix but won't capture Windows-specific info.
+//   - Container detection is heuristic-based (/.dockerenv, /proc/self/cgroup).
+//     GitHub Actions is reported as container type "none" (it's a VM, not
+//     a container, but we record it for environment awareness).
+
 use anyhow::{Context, Result};
 use std::fs;
 use std::io::{BufRead, BufReader};
@@ -8,7 +38,7 @@ use crate::hash;
 use crate::sign;
 use crate::vbw::model::*;
 
-/// Known lockfile names to auto-detect.
+/// Lockfile names to auto-detect in the project root.
 const LOCKFILE_NAMES: &[&str] = &[
     "package-lock.json",
     "yarn.lock",
@@ -250,8 +280,13 @@ fn capture_environment(policy: &Policy) -> Result<Environment> {
     })
 }
 
+/// Detect if we're running inside a container or CI environment.
+///
+/// This is heuristic-based, not authoritative. Returns None for bare-metal.
+/// GitHub Actions is reported with type "none" because it's a VM, not a container,
+/// but we include it so the environment record reflects CI context.
 fn detect_container() -> Option<ContainerInfo> {
-    // Check for /.dockerenv
+    // Check for /.dockerenv (standard Docker marker file)
     if Path::new("/.dockerenv").exists() {
         return Some(ContainerInfo {
             container_type: "docker".to_string(),
@@ -313,6 +348,12 @@ fn detect_materials() -> Result<MaterialsLock> {
     })
 }
 
+/// Map lockfile name to a material kind for the schema.
+///
+/// The schema allows: "npm", "git", "tarball", "file".
+/// We use "npm" for JS ecosystem locks and "file" for everything else.
+/// TODO: Consider adding "cargo", "go", "ruby", etc. to the schema
+/// in a future version for more precise ecosystem identification.
 fn lockfile_kind(name: &str) -> &str {
     match name {
         "package-lock.json" | "yarn.lock" | "pnpm-lock.yaml" => "npm",
@@ -325,6 +366,12 @@ fn lockfile_kind(name: &str) -> &str {
     }
 }
 
+/// Run the user's build command, capturing stdout and stderr into a transcript.
+///
+/// KNOWN LIMITATION: stdout is read to completion before stderr begins.
+/// This means stderr output only appears in the transcript after all stdout.
+/// For fully interleaved capture, we'd need async I/O or threads. This is
+/// acceptable for v1.0 since the transcript is for auditing, not real-time use.
 fn run_build_command(cmd: &[String]) -> Result<String> {
     if cmd.is_empty() {
         anyhow::bail!("No build command specified");
