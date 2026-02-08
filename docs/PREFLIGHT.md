@@ -172,7 +172,7 @@ Final gut-check before deploying:
 
 - [`SITE_SECURITY_CHECKLIST.md`](SITE_SECURITY_CHECKLIST.md) - Comprehensive security reference
 - [`GETTING_STARTED.md`](GETTING_STARTED.md) - Deployment walkthrough
-- [`_headers`](_headers) - Security headers configuration
+- [`_headers`](../_headers) - Security headers configuration
 
 ---
 

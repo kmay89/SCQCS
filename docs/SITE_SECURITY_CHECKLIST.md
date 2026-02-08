@@ -468,7 +468,7 @@ This checklist is designed to be copied and modified. To adapt it for your proje
 
 - [`PREFLIGHT.md`](PREFLIGHT.md) - Quick runnable checks before every deploy
 - [`GETTING_STARTED.md`](GETTING_STARTED.md) - Step-by-step Netlify deployment guide
-- [`_headers`](_headers) - Security headers configuration
+- [`_headers`](../_headers) - Security headers configuration
 
 ---
 

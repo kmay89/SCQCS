@@ -34,17 +34,10 @@
   Cache-Control: public, max-age=31536000, immutable
 
 /assets/*.png
-  Cache-Control: public, max-age=31536000, immutable
-
 /assets/*.jpeg
-  Cache-Control: public, max-age=31536000, immutable
-
 /assets/*.jpg
-  Cache-Control: public, max-age=31536000, immutable
-
+/assets/*.gif
 /assets/*.ico
-  Cache-Control: public, max-age=31536000, immutable
-
 /assets/*.mp4
   Cache-Control: public, max-age=31536000, immutable
 
